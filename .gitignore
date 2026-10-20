@@ -1,0 +1,30 @@
+# Secrets: API keys and tokens (Stripe, Conekta, WhatsApp, etc.)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.mobileprovision
+
+# Downloaded code libraries (rebuilt automatically)
+node_modules/
+
+# Build output
+dist/
+build/
+.next/
+.vercel/
+.netlify/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Computer-generated junk files
+.DS_Store
+Thumbs.db
+
+# Editor settings
+.vscode/
+.idea/
