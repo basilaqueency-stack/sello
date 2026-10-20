@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sello — Wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12292B;
+    --profile:#7C9DD2;
+    --bold:#B2AB2B;
+    --small:#673c33;
+    --accent:#D14C18;
+    --coral:#E85D6A;
+    --paper:#FAF6EF;
+    --line:#DCD5C4;
+    --card-dark:#12292B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#EFEAE0;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    padding:26px 20px 40px;
+  }
+  .page{max-width:900px;margin:0 auto;}
+  .page-head{text-align:center;margin-bottom:24px;}
+  .wordmark{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:34px;
+    letter-spacing:-0.01em;
+    color:var(--bold);
+  }
+  .wordmark::after{
+    content:"●";
+    color:var(--accent);
+    font-size:14px;
+    vertical-align:top;
+    margin-left:4px;
+  }
+  .subhead{
+    color:var(--small);
+    font-size:14px;
+    max-width:420px;
+    margin:8px auto 0;
+    line-height:1.5;
+  }
+  .apps-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+  }
+  @media (max-width:760px){
+    .apps-grid{grid-template-columns:1fr;}
+  }
+  .app-col{display:flex;flex-direction:column;align-items:center;}
+  .app-label{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--small);
+    background:#EDE7DB;
+    padding:6px 12px;
+    border-radius:20px;
+    margin-bottom:12px;
+  }
+  /* phone frame */
+  .phone{
+    width:300px;
+    height:610px;
+    background:var(--ink);
+    border-radius:38px;
+    padding:12px;
+    box-shadow:0 20px 40px -12px rgba(18,41,43,0.35);
+    position:relative;
+  }
+  .notch{
+    position:absolute;
+    top:12px;left:50%;
+    transform:translateX(-50%);
+    width:90px;height:18px;
+    background:var(--ink);
+    border-radius:0 0 14px 14px;
+    z-index:5;
+  }
+  .screens{
+    background:var(--paper);
+    width:100%;height:100%;
+    border-radius:28px;
+    overflow:hidden;
+    position:relative;
+  }
+  .screen{
+    position:absolute;
+    inset:0;
+    padding:28px 16px 14px;
+    display:none;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .screen.active{display:flex;}
+
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--bold);}
+  .biz{font-size:13px;font-weight:600;color:var(--small);}
+  .back{background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);}
+  .lock{font-size:10px;color:var(--small);font-family:'Space Mono',monospace;}
+
+  .search-row{display:flex;gap:8px;margin-bottom:14px;}
+  .search-row input{
+    flex:1;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:13px;font-family:inherit;background:#fff;
+  }
+  .qr-btn{
+    background:var(--bold);color:var(--ink);border:none;border-radius:10px;
+    padding:0 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;
+  }
+  .section-label{
+    font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;
+    letter-spacing:0.06em;color:var(--small);margin-bottom:8px;
+  }
+  .recent-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;}
+  .recent-list li{display:flex;align-items:center;gap:10px;}
+  .avatar{
+    width:34px;height:34px;border-radius:50%;background:var(--profile);
+    color:#fff;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .avatar.lg{width:52px;height:52px;font-size:15px;margin:0 auto 8px;}
+  .recent-list li strong{display:block;font-size:13px;color:var(--bold);}
+  .recent-list li small{color:var(--small);font-size:11px;}
+
+  .member-card{text-align:center;margin-bottom:12px;}
+  .member-card h3{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:2px 0;color:var(--bold);}
+  .tier{font-size:12px;color:var(--small);font-weight:600;margin:0;}
+  .tier.warn{color:var(--coral);}
+
+  /* stamp card — signature element */
+  .stamp-card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:14px 12px 12px;position:relative;margin-bottom:12px;
+  }
+  .stamp-card::before,.stamp-card::after{
+    content:"";position:absolute;top:50%;transform:translateY(-50%);
+    width:16px;height:16px;background:var(--paper);border-radius:50%;
+  }
+  .stamp-card::before{left:-8px;}
+  .stamp-card::after{right:-8px;}
+  .stamp-row{
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+    border-bottom:1px dashed var(--line);padding-bottom:9px;margin-bottom:8px;
+  }
+  .stamp{
+    width:26px;height:26px;border-radius:50%;
+    border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;color:transparent;
+  }
+  .stamp.filled{
+    background:var(--accent);border-color:var(--accent);color:#fff;
+  }
+  .stamp-meta{
+    display:flex;justify-content:space-between;
+    font-family:'Space Mono',monospace;font-size:10px;color:var(--small);
+  }
+  .stamp-card.on-dark{background:var(--card-dark);border-color:var(--card-dark);}
+  .stamp-card.on-dark .stamp{border-color:rgba(255,255,255,0.35);}
+  .stamp-card.on-dark .stamp-meta{color:rgba(255,255,255,0.65);}
+  .stamp-card.on-dark::before,.stamp-card.on-dark::after{background:var(--ink);}
+  .stamp-card.on-dark .stamp-row{border-color:rgba(255,255,255,0.2);}
+
+  .primary-btn{
+    background:var(--accent);color:#fff;border:none;border-radius:12px;
+    padding:12px;font-size:14px;font-weight:700;font-family:inherit;
+    cursor:pointer;margin-bottom:8px;
+  }
+  .secondary-btn{
+    background:var(--ink);color:#fff;border:none;border-radius:12px;
+    padding:12px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;
+  }
+  .ghost-btn{
+    background:none;border:1px solid var(--line);border-radius:12px;
+    padding:10px;font-size:13px;font-weight:600;font-family:inherit;
+    color:var(--ink);cursor:pointer;margin-bottom:8px;
+  }
+
+  .confirm{text-align:center;margin:auto 0;}
+  .check-circle{
+    width:56px;height:56px;border-radius:50%;background:var(--accent);
+    color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;
+    margin:0 auto 14px;
+  }
+  .confirm h3{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0 0 6px;color:var(--bold);}
+  .confirm p{font-size:13px;color:var(--small);margin:0 0 14px;}
+
+  .alert-card{
+    background:#FBEAEA;border:1px solid #F2C7CB;border-radius:12px;
+    padding:10px;font-size:12px;margin-bottom:12px;
+  }
+  .alert-card strong{color:var(--coral);}
+
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .stat{
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:10px;text-align:center;
+  }
+  .stat:first-child{grid-column:1 / -1;}
+  .stat strong{display:block;font-family:'Space Grotesk',sans-serif;font-size:22px;color:var(--bold);}
+  .stat span{font-size:10px;color:var(--small);font-family:'Space Mono',monospace;}
+  .tier-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .tier-list li{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;background:#fff;border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;
+  }
+  .edit{background:none;border:none;color:var(--bold);font-weight:700;font-size:11px;cursor:pointer;}
+
+  .screen-title{font-family:'Space Grotesk',sans-serif;font-size:19px;margin:0 0 12px;color:var(--bold);}
+  .tier-card{
+    background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:8px;
+  }
+  .tier-card.featured{border-color:var(--accent);border-width:2px;}
+  .tier-card strong{font-size:14px;color:var(--bold);}
+  .tier-card span{font-family:'Space Mono',monospace;font-size:12px;color:var(--small);}
+  .tier-card button{
+    margin-top:4px;background:var(--ink);color:#fff;border:none;
+    border-radius:8px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .tier-card.featured button{background:var(--accent);}
+
+  .pay-form{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;}
+  .pay-form label{font-size:11px;color:var(--small);font-family:'Space Mono',monospace;}
+  .pay-form input{
+    display:block;width:100%;margin-top:5px;border:1px solid var(--line);
+    border-radius:10px;padding:10px;font-size:13px;font-family:'Inter',sans-serif;
+  }
+
+  .install-card{text-align:center;margin:auto 0;}
+  .share-icon{font-size:28px;margin-bottom:10px;}
+  .install-card h3{font-family:'Space Grotesk',sans-serif;font-size:18px;margin:0 0 14px;line-height:1.3;color:var(--bold);}
+  .install-card ol{
+    text-align:left;font-size:12px;color:var(--small);padding-left:18px;
+    line-height:1.9;margin:0 0 14px;
+  }
+
+  .wallet-card{
+    background:var(--card-dark);color:#fff;border-radius:16px;
+    padding:14px;text-align:center;margin-bottom:10px;
+  }
+  .wallet-head{
+    display:flex;justify-content:space-between;font-size:10px;
+    font-family:'Space Mono',monospace;color:rgba(255,255,255,0.6);margin-bottom:10px;
+  }
+  .qr-wrap{background:#fff;border-radius:10px;padding:10px;display:inline-block;margin-bottom:8px;}
+  .wallet-name{font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--bold);}
+
+  .footnote{
+    text-align:center;font-size:12px;color:var(--small);margin-top:30px;
+    max-width:460px;margin-left:auto;margin-right:auto;line-height:1.6;
+  }
+
+  /* tabs under phone */
+  .tabs{
+    display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+    margin-top:12px;max-width:300px;
+  }
+  .tab{
+    font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;
+    letter-spacing:0.03em;padding:7px 10px;border-radius:20px;
+    border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;
+  }
+  .tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .caption{
+    font-size:12px;color:var(--small);text-align:center;max-width:280px;
+    margin-top:8px;line-height:1.5;min-height:32px;
+  }
+
+  /* bottom nav footer inside phone */
+  .app-footer{
+    position:absolute;left:0;right:0;bottom:0;height:58px;
+    background:#fff;border-top:1px solid var(--line);
+    display:flex;z-index:10;border-radius:0 0 28px 28px;
+  }
+  .foot-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;background:none;border:none;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:10px;font-weight:600;color:var(--small);
+  }
+  .foot-icon{font-size:16px;line-height:1;}
+  .foot-tab.active{color:var(--accent);}
+
+  /* multi-membership switcher + mini cards */
+  .switcher-btn{
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:6px 14px;font-size:11px;font-weight:600;color:var(--ink);
+    cursor:pointer;margin:0 auto 12px;font-family:'Space Mono',monospace;
+  }
+  .membership-mini{
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;margin-bottom:8px;cursor:pointer;
+  }
+  .mini-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600;margin-bottom:6px;}
+  .mini-top span{font-family:'Space Mono',monospace;font-size:11px;color:var(--small);font-weight:400;}
+  .mini-bar{height:5px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:5px;}
+  .mini-fill{height:100%;background:var(--accent);}
+  .mini-fill.warn{background:var(--coral);}
+  .membership-mini small{color:var(--small);font-size:10px;}
+  .membership-mini.expired-mini{opacity:0.65;}
+
+  /* directory */
+  .chip-row{display:flex;gap:6px;margin-bottom:12px;}
+  .chip{
+    font-family:'Space Mono',monospace;font-size:10px;padding:5px 10px;
+    border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--small);
+  }
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .biz-item{
+    display:flex;align-items:center;gap:10px;background:#fff;
+    border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;
+  }
+  .biz-item > div{flex:1;}
+  .biz-item strong{display:block;font-size:13px;color:var(--bold);}
+  .biz-item small{font-size:10px;color:var(--small);}
+  .toggle-row{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    font-size:12px;background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;margin-top:12px;color:var(--small);
+  }
+  .toggle{width:34px;height:20px;border-radius:12px;background:var(--accent);position:relative;flex-shrink:0;}
+  .toggle::after{content:"";position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;}
+
+  /* loyalty points + wallet */
+  .points-strip{
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;margin-bottom:10px;cursor:pointer;
+  }
+  .points-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .points-top strong{font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--bold);}
+  .points-top span{font-family:'Space Mono',monospace;font-size:10px;color:var(--small);}
+  .points-note{
+    font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);
+    text-align:center;margin:0 0 10px;
+  }
+  .points-hero{text-align:center;margin-bottom:12px;}
+  .points-hero strong{
+    display:block;font-family:'Space Grotesk',sans-serif;font-size:40px;
+    color:var(--bold);line-height:1;margin-bottom:4px;
+  }
+  .points-hero span{font-family:'Space Mono',monospace;font-size:10px;color:var(--small);}
+  .reward-item{
+    display:flex;justify-content:space-between;align-items:center;
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;margin-bottom:8px;
+  }
+  .reward-item strong{display:block;font-size:13px;color:var(--bold);}
+  .reward-item small{font-size:10px;color:var(--small);font-family:'Space Mono',monospace;}
+  .reward-btn{
+    background:var(--accent);color:#fff;border:none;border-radius:8px;
+    padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;
+  }
+  .reward-item.locked{opacity:0.6;}
+  .reward-item.locked .reward-btn{background:var(--line);color:var(--small);cursor:default;}
+  .wallet-btn{
+    width:100%;border-radius:12px;padding:12px;font-size:13px;font-weight:600;
+    font-family:'Inter',sans-serif;cursor:pointer;margin-bottom:8px;
+  }
+  .wallet-btn.apple{background:#000;color:#fff;border:none;}
+  .wallet-btn.google{background:#fff;color:var(--ink);border:1px solid var(--line);}
+  .wallet-note{font-size:11px;color:var(--small);text-align:center;line-height:1.5;margin:4px 0 0;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="wordmark">Sello</div>
+    <p class="subhead">Cinco pantallas por app — así se ve el mismo check-in desde el mostrador y desde el teléfono del cliente.</p>
+  </div>
+
+  <div class="apps-grid">
+
+    <!-- STAFF APP -->
+    <section class="app-col" data-app="staff">
+      <div class="app-label">Personal · Café Salvia</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screens">
+
+          <div class="screen active" data-screen="home" data-footer-section="inicio">
+            <div class="topbar"><span class="brand">Sello</span><span class="biz">Café Salvia</span></div>
+            <div class="search-row">
+              <input placeholder="Buscar por teléfono…">
+              <button class="qr-btn">▤ Escanear</button>
+            </div>
+            <div class="section-label">Check-ins recientes</div>
+            <ul class="recent-list">
+              <li><span class="avatar">AT</span><div><strong>Ana Torres</strong><small>hace 4 min · 6/10 sellos</small></div></li>
+              <li><span class="avatar">JR</span><div><strong>Jorge Ruiz</strong><small>hace 22 min · 2/5 sellos</small></div></li>
+              <li><span class="avatar">MC</span><div><strong>María Cruz</strong><small>hace 1 h · ilimitado</small></div></li>
+            </ul>
+          </div>
+
+          <div class="screen" data-screen="member" data-footer-section="inicio">
+            <div class="topbar"><button class="back">←</button><span class="biz">Café Salvia</span></div>
+            <div class="member-card">
+              <span class="avatar lg">AT</span>
+              <h3>Ana Torres</h3>
+              <p class="tier">10 cafés / mes</p>
+            </div>
+            <div class="stamp-card">
+              <div class="stamp-row">
+                <span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp filled">✓</span>
+                <span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp filled">✓</span>
+                <span class="stamp filled">✓</span><span class="stamp"></span><span class="stamp"></span><span class="stamp"></span>
+              </div>
+              <div class="stamp-meta"><span>7/10 sellados</span><span>vence 18 jul</span></div>
+            </div>
+            <p class="points-note">+10 puntos por esta visita · 320 acumulados</p>
+            <button class="primary-btn">Sellar 1 café</button>
+            <button class="ghost-btn">Canjear premio</button>
+          </div>
+
+          <div class="screen" data-screen="stamped">
+            <div class="confirm">
+              <div class="check-circle">✓</div>
+              <h3>¡Sellado!</h3>
+              <p>Ana Torres — 3 cafés restantes este mes.<br>+10 puntos · 330 en total.</p>
+              <button class="secondary-btn">Listo</button>
+            </div>
+          </div>
+
+          <div class="screen" data-screen="expired" data-footer-section="inicio">
+            <div class="topbar"><button class="back">←</button><span class="biz">Café Salvia</span></div>
+            <div class="member-card">
+              <span class="avatar lg">JR</span>
+              <h3>Jorge Ruiz</h3>
+              <p class="tier warn">Membresía vencida</p>
+            </div>
+            <div class="alert-card"><strong>Sin sellos disponibles.</strong> Su membresía venció hace 3 días.</div>
+            <button class="primary-btn">Renovar membresía</button>
+            <button class="ghost-btn">Vender café individual</button>
+          </div>
+
+          <div class="screen" data-screen="dashboard" data-footer-section="panel">
+            <div class="topbar"><span class="biz">Panel</span><span class="lock">🔒 Solo dueño</span></div>
+            <div class="stat-grid">
+              <div class="stat"><strong>84</strong><span>miembros activos</span></div>
+              <div class="stat"><strong>$28,400</strong><span>MXN / mes</span></div>
+              <div class="stat"><strong>6</strong><span>vencen esta semana</span></div>
+            </div>
+            <div class="section-label">Niveles</div>
+            <ul class="tier-list">
+              <li>5 cafés/mes — $220 <button class="edit">Editar</button></li>
+              <li>10 cafés/mes — $400 <button class="edit">Editar</button></li>
+              <li>Ilimitado — $650 <button class="edit">Editar</button></li>
+            </ul>
+            <div class="toggle-row"><span>Aparecer en el directorio de Sello</span><span class="toggle"></span></div>
+          </div>
+
+        </div>
+        <div class="app-footer">
+          <button class="foot-tab active" data-section="inicio" data-target="home">
+            <span class="foot-icon">⌂</span><span>Inicio</span>
+          </button>
+          <button class="foot-tab" data-section="panel" data-target="dashboard">
+            <span class="foot-icon">▦</span><span>Panel</span>
+          </button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-target="home">Inicio</button>
+        <button class="tab" data-target="member">Miembro</button>
+        <button class="tab" data-target="stamped">Sellado</button>
+        <button class="tab" data-target="expired">Vencido</button>
+        <button class="tab" data-target="dashboard">Panel</button>
+      </div>
+      <p class="caption">Meta: sellar un café en menos de 5 segundos, sin salir de la pantalla de inicio.</p>
+    </section>
+
+    <!-- CUSTOMER APP -->
+    <section class="app-col" data-app="customer">
+      <div class="app-label">Cliente · Café Salvia</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screens">
+
+          <div class="screen active" data-screen="choose">
+            <div class="topbar"><span class="biz">Café Salvia</span></div>
+            <h3 class="screen-title">Elige tu membresía</h3>
+            <div class="tier-card"><strong>5 cafés / mes</strong><span>$220 MXN</span><button>Elegir</button></div>
+            <div class="tier-card featured"><strong>10 cafés / mes</strong><span>$400 MXN</span><button>Elegir</button></div>
+            <div class="tier-card"><strong>Ilimitado</strong><span>$650 MXN</span><button>Elegir</button></div>
+          </div>
+
+          <div class="screen" data-screen="pay">
+            <div class="topbar"><button class="back">←</button><span class="biz">10 cafés / mes</span></div>
+            <div class="pay-form">
+              <label>Nombre<input placeholder="Ana Torres"></label>
+              <label>WhatsApp<input placeholder="322 123 4567"></label>
+              <label>Tarjeta<input placeholder="•••• •••• •••• 4242"></label>
+            </div>
+            <button class="primary-btn">Confirmar — $400/mes</button>
+          </div>
+
+          <div class="screen" data-screen="install">
+            <div class="install-card">
+              <div class="share-icon">⬆︎</div>
+              <h3>Agrega Sello a tu pantalla de inicio</h3>
+              <ol>
+                <li>Toca <strong>Compartir</strong> en Safari</li>
+                <li>Elige <strong>Agregar a inicio</strong></li>
+                <li>Abre Sello desde el ícono</li>
+              </ol>
+              <button class="secondary-btn">Entendido</button>
+            </div>
+          </div>
+
+          <div class="screen" data-screen="pass" data-footer-section="pase">
+            <button class="switcher-btn" data-target="todas">Café Salvia · 1 de 3 <span>▾</span></button>
+            <div class="wallet-card">
+              <div class="wallet-head"><span>CAFÉ SALVIA</span><span>10/MES</span></div>
+              <div class="qr-wrap" id="qrHolder"></div>
+              <div class="wallet-name">Ana Torres</div>
+            </div>
+            <div class="stamp-card on-dark">
+              <div class="stamp-row">
+                <span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp filled">✓</span>
+                <span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp filled">✓</span>
+                <span class="stamp filled">✓</span><span class="stamp"></span><span class="stamp"></span><span class="stamp"></span>
+              </div>
+              <div class="stamp-meta"><span>7/10 sellados</span><span>renueva 18 jul</span></div>
+            </div>
+            <div class="points-strip" data-target="premios">
+              <div class="points-top"><strong>320 pts</strong><span>Próximo premio: 400 ▸</span></div>
+              <div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div>
+            </div>
+            <button class="ghost-btn" data-target="wallet">＋ Añadir a Wallet</button>
+          </div>
+
+          <div class="screen" data-screen="premios" data-footer-section="pase">
+            <div class="topbar"><button class="back" data-target="pass">←</button><span class="biz">Mis puntos</span></div>
+            <div class="points-hero"><strong>320</strong><span>PUNTOS EN CAFÉ SALVIA</span></div>
+            <div class="section-label">Premios</div>
+            <div class="reward-item"><div><strong>Café del día</strong><small>100 pts</small></div><button class="reward-btn">Canjear</button></div>
+            <div class="reward-item"><div><strong>Pan dulce</strong><small>150 pts</small></div><button class="reward-btn">Canjear</button></div>
+            <div class="reward-item locked"><div><strong>Bolsa de café 250 g</strong><small>400 pts · faltan 80</small></div><button class="reward-btn">Bloqueado</button></div>
+          </div>
+
+          <div class="screen" data-screen="wallet" data-footer-section="pase">
+            <div class="topbar"><button class="back" data-target="pass">←</button><span class="biz">Añadir a Wallet</span></div>
+            <div class="wallet-card">
+              <div class="wallet-head"><span>CAFÉ SALVIA</span><span>320 PTS</span></div>
+              <div class="qr-wrap" id="qrHolderWallet"></div>
+              <div class="wallet-name">Ana Torres</div>
+            </div>
+            <button class="wallet-btn apple">Añadir a Apple Wallet</button>
+            <button class="wallet-btn google">Añadir a Google Wallet</button>
+            <p class="wallet-note">Tus puntos y sellos se actualizan solos, y el código abre aunque no tengas señal.</p>
+          </div>
+
+          <div class="screen" data-screen="todas" data-footer-section="pase">
+            <div class="topbar"><button class="back" data-target="pass">←</button><span class="biz">Mis membresías</span></div>
+            <div class="section-label">3 activas</div>
+            <div class="membership-mini" data-target="pass">
+              <div class="mini-top"><strong>Café Salvia</strong><span>7/10</span></div>
+              <div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div>
+              <small>Renueva 18 jul</small>
+            </div>
+            <div class="membership-mini" data-target="pass">
+              <div class="mini-top"><strong>Salón Flor</strong><span>Ilimitado</span></div>
+              <div class="mini-bar"><div class="mini-fill" style="width:100%"></div></div>
+              <small>Renueva 2 ago</small>
+            </div>
+            <div class="membership-mini expired-mini" data-target="vencida">
+              <div class="mini-top"><strong>Barbería Costa</strong><span>Vencida</span></div>
+              <div class="mini-bar"><div class="mini-fill warn" style="width:20%"></div></div>
+              <small>Venció hace 5 días</small>
+            </div>
+            <button class="ghost-btn" data-target="explorar">Descubrir más negocios</button>
+          </div>
+
+          <div class="screen" data-screen="explorar" data-footer-section="pase">
+            <div class="topbar"><button class="back" data-target="todas">←</button><span class="biz">Descubrir</span></div>
+            <div class="search-row"><input placeholder="Buscar negocios…"></div>
+            <div class="chip-row"><span class="chip active">Todos</span><span class="chip">Cafés</span><span class="chip">Belleza</span></div>
+            <div class="biz-item"><span class="avatar">TM</span><div><strong>Tostadora Malecón</strong><small>Centro · 20% en bebidas con membresía</small></div><button class="reward-btn">Ver</button></div>
+            <div class="biz-item"><span class="avatar">NL</span><div><strong>Nails by Lu</strong><small>Versalles · puntos dobles los martes</small></div><button class="reward-btn">Ver</button></div>
+            <div class="biz-item"><span class="avatar">SM</span><div><strong>Spa Marina</strong><small>Marina · 2 masajes al mes</small></div><button class="reward-btn">Ver</button></div>
+            <div class="biz-item"><span class="avatar">CS</span><div><strong>Café Salvia</strong><small>Zona Romántica · ya eres miembro</small></div><button class="reward-btn">Pase</button></div>
+          </div>
+
+          <div class="screen" data-screen="vencida" data-footer-section="pase">
+            <div class="wallet-card" style="opacity:0.55;">
+              <div class="wallet-head"><span>CAFÉ SALVIA</span><span>VENCIDA</span></div>
+              <div class="qr-wrap" id="qrHolderExpired"></div>
+              <div class="wallet-name">Ana Torres</div>
+            </div>
+            <div class="alert-card"><strong>Tu membresía venció hace 3 días.</strong> Renueva antes de tu próxima visita para seguir usando tus sellos.</div>
+            <button class="primary-btn">Renovar — $400/mes</button>
+            <button class="ghost-btn">Ver historial</button>
+          </div>
+
+          <div class="screen" data-screen="history" data-footer-section="historial">
+            <div class="topbar"><span class="biz">Mi membresía</span></div>
+            <div class="section-label">Historial</div>
+            <ul class="recent-list">
+              <li><span class="avatar">☕</span><div><strong>Café sellado</strong><small>hoy · 9:14 am</small></div></li>
+              <li><span class="avatar">☕</span><div><strong>Café sellado</strong><small>ayer · 8:02 am</small></div></li>
+              <li><span class="avatar">☕</span><div><strong>Café sellado</strong><small>miércoles · 8:40 am</small></div></li>
+            </ul>
+            <button class="ghost-btn">Pausar membresía</button>
+            <button class="ghost-btn">Cambiar método de pago</button>
+          </div>
+
+        </div>
+        <div class="app-footer" style="display:none;">
+          <button class="foot-tab" data-section="pase" data-target="pass">
+            <span class="foot-icon">◈</span><span>Pase</span>
+          </button>
+          <button class="foot-tab" data-section="historial" data-target="history">
+            <span class="foot-icon">☰</span><span>Historial</span>
+          </button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-target="choose">Elegir</button>
+        <button class="tab" data-target="pay">Pagar</button>
+        <button class="tab" data-target="install">Instalar</button>
+        <button class="tab" data-target="pass">Pase</button>
+        <button class="tab" data-target="premios">Premios</button>
+        <button class="tab" data-target="wallet">Wallet</button>
+        <button class="tab" data-target="todas">Todas</button>
+        <button class="tab" data-target="explorar">Explorar</button>
+        <button class="tab" data-target="vencida">Vencida</button>
+        <button class="tab" data-target="history">Historial</button>
+      </div>
+      <p class="caption">Meta: de un link de WhatsApp a pase instalado en menos de un minuto, sin descargar nada.</p>
+    </section>
+
+  </div>
+
+  <p class="footnote">El mismo patrón de tarjeta de sellos funciona para salones de belleza — cambia "cafés" por "cortes" o "sesiones" y el flujo no cambia.</p>
+
+</div>
+
+<script>
+  // wire up navigation per app column, independently
+  document.querySelectorAll('.app-col').forEach(col => {
+    const screens = col.querySelectorAll('.screen');
+    const pillTabs = col.querySelectorAll('.tabs .tab');
+    const footTabs = col.querySelectorAll('.app-footer .foot-tab');
+    const footer = col.querySelector('.app-footer');
+    const jumpers = col.querySelectorAll('[data-target]:not(.tab):not(.foot-tab)');
+    const captionText = {
+      home: "Meta: sellar un café en menos de 5 segundos, sin salir de la pantalla de inicio.",
+      member: "El personal ve sellos restantes y vencimiento de un vistazo, sin abrir otra pantalla.",
+      stamped: "Confirmación rápida — un toque para volver al check-in y atender al siguiente cliente.",
+      expired: "Estado vencido siempre ofrece una salida: renovar o vender por unidad, nunca un callejón sin salida.",
+      dashboard: "Separado del check-in diario para que el personal nunca vea configuración por accidente.",
+      choose: "El cliente llega aquí desde un QR en el mostrador o un link de WhatsApp — sin descargar nada todavía.",
+      pay: "Solo tres campos. Menos fricción en el momento de la decisión.",
+      install: "Este paso también activa las notificaciones push en iPhone — por eso se explica, no se asume.",
+      pass: "Pantalla principal del cliente: su código para mostrar en el mostrador y sus sellos restantes.",
+      todas: "Un cliente puede tener membresías con varios negocios — todas viven en la misma app, cada una con su propio pase.",
+      premios: "Los puntos se ganan por visita y se canjean por premios que define cada negocio. Al canjear, el personal confirma en su app.",
+      wallet: "Un toque agrega el pase a Apple o Google Wallet: el QR y los puntos viven en el teléfono, se actualizan solos y abren sin señal.",
+      explorar: "Directorio de negocios que usan Sello: solo aparecen los que lo activan, y el cliente puede buscar por tipo o zona.",
+      vencida: "El cliente ve que venció antes de llegar al mostrador — no en el momento incómodo frente al personal.",
+      history: "El cliente controla su membresía sin tener que escribirle al negocio."
+    };
+    const caption = col.querySelector('.caption');
+
+    function goTo(target){
+      let newScreen = null;
+      screens.forEach(s => {
+        const match = s.dataset.screen === target;
+        s.classList.toggle('active', match);
+        if (match) newScreen = s;
+      });
+      pillTabs.forEach(t => t.classList.toggle('active', t.dataset.target === target));
+      if (caption && captionText[target]) caption.textContent = captionText[target];
+
+      if (footer) {
+        const section = newScreen ? newScreen.dataset.footerSection : null;
+        if (section) {
+          footer.style.display = 'flex';
+          footTabs.forEach(f => f.classList.toggle('active', f.dataset.section === section));
+          if (newScreen) newScreen.style.paddingBottom = '70px';
+        } else {
+          footer.style.display = 'none';
+          if (newScreen) newScreen.style.paddingBottom = '';
+        }
+      }
+    }
+
+    pillTabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.target)));
+    footTabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.target)));
+    jumpers.forEach(el => el.addEventListener('click', () => goTo(el.dataset.target)));
+
+    // initialize based on whichever screen starts active
+    const initial = col.querySelector('.screen.active');
+    goTo(initial ? initial.dataset.screen : screens[0].dataset.screen);
+  });
+
+  // simple deterministic fake QR pattern (visual only)
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+  }
+  function buildQR(){
+    const size = 13, cell = 9;
+    const rand = mulberry32(42);
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", size*cell);
+    svg.setAttribute("height", size*cell);
+    const isFinder = (x,y) => (x<3&&y<3)||(x>size-4&&y<3)||(x<3&&y>size-4);
+    for(let y=0;y<size;y++){
+      for(let x=0;x<size;x++){
+        let on;
+        if(isFinder(x,y)){
+          const lx = x<3?x:(x>size-4?x-(size-3):x);
+          const ly = y<3?y:y;
+          on = (lx===0||lx===2||ly===0||ly===2||(lx===1&&ly===1));
+        } else {
+          on = rand() > 0.55;
+        }
+        if(on){
+          const rect = document.createElementNS(svgNS,"rect");
+          rect.setAttribute("x", x*cell);
+          rect.setAttribute("y", y*cell);
+          rect.setAttribute("width", cell);
+          rect.setAttribute("height", cell);
+          rect.setAttribute("fill", "#12292B");
+          svg.appendChild(rect);
+        }
+      }
+    }
+    return svg;
+  }
+  const holder = document.getElementById('qrHolder');
+  if(holder) holder.appendChild(buildQR());
+  const holder2 = document.getElementById('qrHolderExpired');
+  if(holder2) holder2.appendChild(buildQR());
+  const holder3 = document.getElementById('qrHolderWallet');
+  if(holder3) holder3.appendChild(buildQR());
+</script>
+</body>
+</html>
