@@ -42,10 +42,10 @@ function TierForm({ businessId, tier, onDone, onCancel }) {
         <input type="number" min="0" value={f.price_mxn} onChange={(e) => set('price_mxn', e.target.value)} required />
       </label>
       <label>
-        Tipo
+        ¿Cuántos sellos incluye?
         <select value={f.kind} onChange={(e) => set('kind', e.target.value)}>
-          <option value="credits">Cantidad de sellos</option>
-          <option value="unlimited">Ilimitado</option>
+          <option value="credits">Un número limitado (ej. 10 al mes)</option>
+          <option value="unlimited">Sin límite (todos los que quiera)</option>
         </select>
       </label>
       {f.kind === 'credits' && (
@@ -61,9 +61,20 @@ function TierForm({ businessId, tier, onDone, onCancel }) {
         </label>
       )}
       <label>
-        Duración (días)
+        Se renueva cada (días)
         <input type="number" min="1" value={f.period_days} onChange={(e) => set('period_days', e.target.value)} required />
       </label>
+      <Banner kind="info">
+        {f.kind === 'unlimited'
+          ? `Tus clientes podrán sellar sin límite durante ${f.period_days || '…'} días.`
+          : `Tus clientes recibirán ${f.credits_per_period || '…'} sellos cada ${f.period_days || '…'} días.`}
+      </Banner>
+      {f.kind === 'unlimited' && /\d/.test(f.name) && (
+        <Banner kind="warn">
+          El nombre menciona un número, pero esta membresía no tiene límite de sellos. ¿Querías elegir "Un número
+          limitado"?
+        </Banner>
+      )}
       <Banner kind="error">{error}</Banner>
       <div className="row">
         <button className="btn primary" disabled={busy}>Guardar</button>
