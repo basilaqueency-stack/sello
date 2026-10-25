@@ -1,16 +1,16 @@
 :root {
-  --bg: #0a4f52; /* page background: teal */
-  --card: #6b1d31; /* boxes: burgundy */
-  --card-deep: #4e1424; /* darker burgundy: pass card, footer */
-  --text: #ffffff; /* main copy */
-  --small: rgba(255, 255, 255, 0.78); /* small print */
-  --line: rgba(255, 255, 255, 0.18);
-  --line-strong: rgba(255, 255, 255, 0.4);
-  --pill-bg: rgba(255, 255, 255, 0.16);
-  --focus: #ffffff;
-  --warn-text: #ffd3c2;
-  --bold: #b2ab2b; /* big headings */
-  --accent: #d14c18; /* main buttons, filled stamps */
+  --bg: #ffffff; /* page background: white */
+  --card: #12e7e765; /* boxes: soft aqua */
+  --card-deep: #a1f5f5; /* solid aqua: pass card, footer (same look, but opaque) */
+  --text: #12292b; /* main copy */
+  --small: #2c4a4d; /* small print */
+  --line: rgba(18, 41, 43, 0.22);
+  --line-strong: rgba(18, 41, 43, 0.5);
+  --pill-bg: rgba(255, 255, 255, 0.7);
+  --focus: #12292b;
+  --warn-text: #9a2f12;
+  --bold: #4f7a3a; /* big headings, name on the pass: green */
+  --accent: #cc4125; /* main buttons, filled stamps: orange */
   --profile: #7c9dd2; /* avatar circles */
   --ink: #12292b; /* text inside white inputs */
 }
@@ -73,7 +73,7 @@ a { color: inherit; text-decoration: none; }
 .stack + .btn { margin-top: 10px; }
 .form label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-family: 'Space Mono', monospace; color: var(--small); }
 .form input, .form select, .search-row input {
-  width: 100%; border: 1px solid transparent; background: #fff; border-radius: 10px;
+  width: 100%; border: 1px solid var(--line-strong); background: #fff; border-radius: 10px;
   padding: 11px 12px; font-family: 'Inter Variable', system-ui, sans-serif; font-size: 15px; color: var(--ink);
 }
 input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -140,7 +140,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .person-row.static { cursor: default; }
 .person-row strong { display: block; }
 .person-row small { color: var(--small); }
-.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--profile); color: #fff; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--profile); color: var(--ink); font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .avatar.lg { width: 60px; height: 60px; font-size: 17px; margin-bottom: 8px; }
 .member-card { text-align: center; margin: 4px 0 8px; }
 .member-card h2 { font-family: 'Bricolage Grotesque Variable', 'Inter Variable', sans-serif; font-size: 24px; color: var(--bold); margin: 2px 0; }
