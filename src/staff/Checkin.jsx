@@ -409,18 +409,28 @@ export default function Checkin({ business }) {
             <p className="muted">{t('ck.noRecent')}</p>
           ) : (
             <div className="stack">
-              {recent.map((r, i) => (
-                <div key={i} className="person-row static">
-                  <span className="avatar">{initials(r.name)}</span>
-                  <span className="grow">
-                    <strong>{r.name}</strong>
-                    <small>
-                      {ago(r.at)}
-                      {r.credits_remaining != null ? ` · ${t('ck.left', { n: r.credits_remaining })}` : ''}
-                    </small>
-                  </span>
-                </div>
-              ))}
+              {recent.map((r, i) => {
+                const body = (
+                  <>
+                    <span className="avatar">{initials(r.name)}</span>
+                    <span className="grow">
+                      <strong>{r.name}</strong>
+                      <small>
+                        {ago(r.at)}
+                        {r.credits_remaining != null ? ` · ${t('ck.left', { n: r.credits_remaining })}` : ''}
+                      </small>
+                    </span>
+                  </>
+                )
+                // Tap a check-in to open that customer (older server versions don't send the profile).
+                return r.member ? (
+                  <button key={i} className="person-row" onClick={() => { setNotice(null); setSelected(r.member) }}>
+                    {body}
+                  </button>
+                ) : (
+                  <div key={i} className="person-row static">{body}</div>
+                )
+              })}
             </div>
           )}
         </>
