@@ -16,11 +16,11 @@
   --ink: #12292b; /* text inside white inputs */
 
   /* depth: soft plum-tinted shadows, a light-catching top edge, and a fine paper grain */
-  --shadow-sm: 0 1px 2px rgba(116, 27, 71, 0.22), 0 3px 8px -3px rgba(116, 27, 71, 0.25);
-  --shadow-md: 0 1px 2px rgba(116, 27, 71, 0.2), 0 10px 22px -10px rgba(116, 27, 71, 0.45);
-  --shadow-lg: 0 2px 3px rgba(116, 27, 71, 0.18), 0 18px 34px -14px rgba(116, 27, 71, 0.55);
-  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  --sheen: linear-gradient(165deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0) 70%);
+  --shadow-sm: 0 1px 2px rgba(116, 27, 71, 0.14);
+  --shadow-md: 0 1px 2px rgba(116, 27, 71, 0.12), 0 6px 14px -8px rgba(116, 27, 71, 0.28);
+  --shadow-lg: 0 1px 3px rgba(116, 27, 71, 0.14), 0 12px 24px -12px rgba(116, 27, 71, 0.35);
+  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --sheen: linear-gradient(165deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 55%);
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .1  0 0 0 0 .2  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --grain-soft: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .1  0 0 0 0 .2  0 0 0 .13 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
@@ -203,20 +203,18 @@ a.tier-card { text-decoration: none; }
 html, body { background-color: var(--bg); }
 body {
   background-image:
-    radial-gradient(120% 60% at 50% -10%, rgba(18, 231, 231, 0.22), rgba(18, 231, 231, 0) 60%),
-    radial-gradient(90% 50% at 100% 100%, rgba(116, 27, 71, 0.07), rgba(116, 27, 71, 0) 60%);
+    radial-gradient(120% 50% at 50% -10%, rgba(18, 231, 231, 0.12), rgba(18, 231, 231, 0) 60%);
   background-attachment: fixed;
 }
 body::before { /* paper grain over everything, barely there */
   content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image: var(--grain); opacity: 0.07; mix-blend-mode: multiply;
+  background-image: var(--grain); opacity: 0.035; mix-blend-mode: multiply;
 }
 #root { position: relative; z-index: 1; }
 
 /* boxes: glassy aqua with a sheen, a lit top edge and a soft shadow */
 .card, .list-card, .tier-card, .person-row, .stat, .tier-row, .history li, .stamp-card {
-  background-image: var(--sheen), var(--grain-soft);
-  background-blend-mode: normal, multiply;
+  background-image: var(--sheen);
   box-shadow: var(--edge), var(--shadow-sm);
 }
 .card, .tier-card, .stamp-card { box-shadow: var(--edge), var(--shadow-md); }
@@ -224,46 +222,40 @@ body::before { /* paper grain over everything, barely there */
 
 /* the pass is the hero: raised, with a foil-like highlight */
 .wallet-card {
-  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.1) 38%, rgba(255, 255, 255, 0) 60%), var(--grain-soft);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 55%);
   box-shadow: var(--edge), var(--shadow-lg);
 }
-.qr-wrap { box-shadow: 0 1px 2px rgba(116, 27, 71, 0.25), 0 6px 14px -6px rgba(116, 27, 71, 0.4); border: 1px solid rgba(116, 27, 71, 0.15); }
+.qr-wrap { box-shadow: var(--shadow-sm); }
 
 /* selected plan lifts and glows */
-.tier-card.selected { box-shadow: var(--edge), 0 0 0 4px rgba(116, 27, 71, 0.12), var(--shadow-lg); transform: translateY(-1px); }
+.tier-card.selected { box-shadow: var(--edge), 0 0 0 3px rgba(116, 27, 71, 0.1), var(--shadow-md); }
 
 /* buttons feel pressable */
 .btn { box-shadow: var(--edge), var(--shadow-sm); }
 .btn.primary {
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.12) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.18), var(--shadow-md);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--shadow-md);
 }
 .btn.ghost { background-image: var(--sheen); }
 .btn:active:not(:disabled) { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25); }
 
 /* stamps: filled ones look inked, empty ones look pressed in */
-.stamp { box-shadow: inset 0 2px 3px rgba(18, 41, 43, 0.2); background: rgba(255, 255, 255, 0.45); }
+.stamp { box-shadow: inset 0 1px 2px rgba(18, 41, 43, 0.15); }
 .stamp.filled {
-  background-image: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 55%), var(--grain-soft);
-  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(116, 27, 71, 0.4);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  background-image: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 55%);
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.22);
 }
-.stamp.filled:nth-child(4n + 1) { transform: rotate(-5deg); }
-.stamp.filled:nth-child(4n + 2) { transform: rotate(4deg); }
-.stamp.filled:nth-child(4n + 3) { transform: rotate(-2deg); }
-.stamp.filled:nth-child(4n) { transform: rotate(6deg); }
 
 /* fields look recessed; chips and pills get a little body */
-.form input, .form select, .search-row input { box-shadow: inset 0 2px 4px rgba(18, 41, 43, 0.12), 0 1px 0 rgba(255, 255, 255, 0.8); }
+.form input, .form select, .search-row input { box-shadow: inset 0 1px 3px rgba(18, 41, 43, 0.1); }
 .chip { box-shadow: var(--shadow-sm); background-image: var(--sheen); }
-.chip.on { box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2), var(--shadow-sm); }
+.chip.on { box-shadow: var(--shadow-sm); }
 .status-pill { box-shadow: 0 1px 2px rgba(18, 41, 43, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
-.avatar { box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.45), var(--shadow-sm); }
+.avatar { box-shadow: var(--shadow-sm); }
 .banner { box-shadow: 0 1px 2px rgba(18, 41, 43, 0.12); }
 
 /* footer floats above the page */
-.app-footer { box-shadow: 0 -8px 20px -10px rgba(116, 27, 71, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.8); background-image: var(--sheen); }
+.app-footer { box-shadow: 0 -6px 14px -10px rgba(116, 27, 71, 0.3); }
 .lang-bar button.on { box-shadow: var(--shadow-sm); }
 
 .stamp-card.on-dark { background-color: var(--card-deep); }
