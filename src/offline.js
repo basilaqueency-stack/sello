@@ -116,6 +116,15 @@ export function queueStamp(business, member, client_id = crypto.randomUUID(), at
   return { member: updated }
 }
 
+// Sends one stamp. If the database hasn't had the newest update yet (no p_at), retry the old way,
+// so the app keeps working in the meantime.
+export async function sendStamp(membership, client_id, at, ms = 8000) {
+  let res = await withTimeout(supabase.rpc('redeem_stamp', { p_membership: membership, p_client_id: client_id, p_at: at }), ms)
+  if (res.error?.code === 'PGRST202')
+    res = await withTimeout(supabase.rpc('redeem_stamp', { p_membership: membership, p_client_id: client_id }), ms)
+  return res
+}
+
 let flushing = false
 
 // Sends queued stamps oldest-first. Stops at the first "no signal"; refused stamps move to `failed`.
@@ -131,10 +140,7 @@ export async function flushQueue() {
       // After a long time offline the login has expired: renew it first, and wait if that isn't possible yet.
       const { data: auth } = await supabase.auth.getSession()
       if (!auth.session) break
-      const { error } = await withTimeout(
-        supabase.rpc('redeem_stamp', { p_membership: item.membership_id, p_client_id: item.client_id, p_at: item.at }),
-        10000
-      )
+      const { error } = await sendStamp(item.membership_id, item.client_id, item.at, 10000)
       if (isNetworkError(error) || error?.code === 'PGRST301' || /JWT|token/i.test(error?.message || '')) break
       write(K.queue, getQueue().filter((q) => q.client_id !== item.client_id))
       if (error) write(K.failed, [...getFailed(), { ...item, code: (error.message || '').trim() }])

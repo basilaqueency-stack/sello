@@ -3,7 +3,7 @@ import { supabase, friendlyError } from '../supabase.js'
 import { fmtDate, fmtDateTime, money, statusLabel } from '../lib.js'
 import { useLang, tr } from '../i18n.js'
 import {
-  clearFailed, flushQueue, getFailed, getQueue, isNetworkError, queueStamp, refreshRoster, searchRoster, withTimeout,
+  clearFailed, flushQueue, getFailed, getQueue, isNetworkError, queueStamp, refreshRoster, searchRoster, sendStamp, withTimeout,
 } from '../offline.js'
 import { Banner, StampGrid } from '../components.jsx'
 
@@ -135,9 +135,7 @@ export default function Checkin({ business }) {
     // One id and one time per tap: if the answer gets lost on a weak signal, the retry can't double-stamp.
     const client_id = crypto.randomUUID()
     const at = new Date().toISOString()
-    const { data, error } = await withTimeout(
-      supabase.rpc('redeem_stamp', { p_membership: selected.membership.id, p_client_id: client_id, p_at: at })
-    )
+    const { data, error } = await sendStamp(selected.membership.id, client_id, at)
     setBusy(false)
     if (isNetworkError(error)) {
       setDown(true)
