@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { supabase, friendlyError } from '../supabase.js'
 import { Banner } from '../components.jsx'
 import { useLang, tr as tr0 } from '../i18n.js'
+import {
+  clearAllStaffData, getQueue, hasStoredLogin, isNetworkError, loadStaffCache, saveStaffCache, withTimeout,
+} from '../offline.js'
 import Checkin from './Checkin.jsx'
 import Panel from './Panel.jsx'
 
@@ -74,8 +77,9 @@ function slugify(text) {
     .slice(0, 40)
 }
 
-function CreateBusiness({ onDone }) {
+function CreateBusiness({ onDone, email }) {
   const { t } = useLang()
+  const [checked, setChecked] = useState('')
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
@@ -97,6 +101,21 @@ function CreateBusiness({ onDone }) {
     <main className="page">
       <h1 className="title">{t('cb.title')}</h1>
       <p className="muted">{t('cb.sub')}</p>
+      <div className="card stack">
+        <p className="small" style={{ margin: 0 }}>{t('cb.employee', { email: email || '' })}</p>
+        <button
+          type="button"
+          className="btn ghost"
+          onClick={async () => {
+            setChecked('')
+            await onDone()
+            setChecked(t('cb.noInvite'))
+          }}
+        >
+          {t('cb.invited')}
+        </button>
+        <Banner kind="warn">{checked}</Banner>
+      </div>
       <form onSubmit={submit} className="stack form">
         <label>
           {t('cb.name')}
@@ -138,50 +157,140 @@ function CreateBusiness({ onDone }) {
 export default function Staff() {
   const { t } = useLang()
   const [session, setSession] = useState(undefined) // undefined = still checking
+  const [offlineMode, setOfflineMode] = useState(false)
   const [business, setBusiness] = useState(undefined)
   const [role, setRole] = useState(null)
   const [tab, setTab] = useState('inicio')
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
-    return () => sub.subscription.unsubscribe()
+  // With no signal the login can't be refreshed. If this phone already holds a login and a saved
+  // copy of the business, keep the counter open in "offline mode" instead of kicking the staff out.
+  const resolve = useCallback((s) => {
+    if (s) {
+      setOfflineMode(false)
+      setSession(s)
+    } else if (hasStoredLogin() && loadStaffCache()) {
+      setOfflineMode(true)
+      setSession((prev) => (prev && prev.offline ? prev : { offline: true }))
+    } else {
+      setOfflineMode(false)
+      setSession(null)
+    }
   }, [])
+
+  useEffect(() => {
+    // Renewing an expired login needs signal. Don't leave the counter on "Loading…" while it tries:
+    // after a few seconds (right away if the phone says it's offline) open from the saved copy.
+    const wait = setTimeout(() => resolve(null), navigator.onLine ? 5000 : 1000)
+    supabase.auth.getSession().then(({ data }) => {
+      clearTimeout(wait)
+      resolve(data.session)
+    })
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => resolve(s))
+    return () => {
+      clearTimeout(wait)
+      sub.subscription.unsubscribe()
+    }
+  }, [resolve])
+
+  // In offline mode, keep trying to get the real login back as soon as there is signal.
+  useEffect(() => {
+    if (!offlineMode) return
+    const retry = () => supabase.auth.getSession().then(({ data }) => data.session && resolve(data.session))
+    const id = setInterval(retry, 15000)
+    window.addEventListener('online', retry)
+    return () => {
+      clearInterval(id)
+      window.removeEventListener('online', retry)
+    }
+  }, [offlineMode, resolve])
 
   const loadBusiness = useCallback(async () => {
     setError('')
-    const { data: biz, error: e1 } = await supabase.from('businesses').select('*').order('created_at').limit(1)
-    if (e1) return setError(friendlyError(e1))
+    const cached = loadStaffCache()
+    if (session?.offline) {
+      if (cached) {
+        setBusiness(cached.business)
+        setRole(cached.role)
+      }
+      return
+    }
+    // Turn any waiting employee invitation into access (quietly ignored if it fails).
+    const claim = withTimeout(supabase.rpc('claim_invites'), 6000).then(() => {}, () => {})
+    if (!cached) await claim
+    const { data: biz, error: e1 } = await withTimeout(
+      supabase.from('businesses').select('*').order('created_at').limit(1)
+    )
+    if (e1) {
+      if (isNetworkError(e1) && cached) {
+        setBusiness(cached.business)
+        setRole(cached.role)
+        return
+      }
+      return setError(friendlyError(e1))
+    }
     const b = biz?.[0] || null
     setBusiness(b)
     if (b) {
-      const { data: staff } = await supabase.from('business_staff').select('role').eq('business_id', b.id).limit(1)
-      setRole(staff?.[0]?.role || 'staff')
+      const { data: staff } = await withTimeout(
+        supabase.from('business_staff').select('role').eq('business_id', b.id).limit(1)
+      )
+      const r = staff?.[0]?.role || cached?.role || 'staff'
+      setRole(r)
+      saveStaffCache(b, r)
     }
-  }, [])
+  }, [session])
 
   useEffect(() => {
     if (session) loadBusiness()
     else setBusiness(undefined)
   }, [session, loadBusiness])
 
+  async function signOut() {
+    const n = getQueue().length
+    if (n && !window.confirm(t('of.signoutWarn', { n }))) return
+    clearAllStaffData()
+    await supabase.auth.signOut().catch(() => {})
+    if (hasStoredLogin()) {
+      // No signal: the server couldn't be told, so remove the login from this phone ourselves.
+      try {
+        Object.keys(localStorage).filter((k) => /^sb-.*-auth-token$/.test(k)).forEach((k) => localStorage.removeItem(k))
+      } catch {
+        /* ignore */
+      }
+    }
+    setBusiness(undefined)
+    resolve(null)
+  }
+
   if (session === undefined) return <main className="page"><p className="muted">{t('loading')}</p></main>
   if (!session) return <AuthForm />
   if (error) return <main className="page"><Banner kind="error">{error}</Banner></main>
   if (business === undefined) return <main className="page"><p className="muted">{t('loading')}</p></main>
-  if (business === null) return <CreateBusiness onDone={loadBusiness} />
+  if (business === null) return <CreateBusiness onDone={loadBusiness} email={session.user?.email} />
 
   const isOwner = role === 'owner'
   return (
     <div className="shell">
       <header className="topbar">
         <span className="brand">Sello</span>
-        <span className="biz">{business.name}</span>
+        <span className="biz">
+          {offlineMode && <span className="offline-tag">{t('of.mode')} · </span>}
+          {business.name}
+        </span>
       </header>
       <div className="shell-body">
-        {tab === 'inicio' && <Checkin business={business} />}
-        {tab === 'panel' && isOwner && <Panel business={business} onSignOut={() => supabase.auth.signOut()} />}
+        {tab === 'inicio' && (
+          <>
+            <Checkin business={business} />
+            {!isOwner && (
+              <div className="center">
+                <button className="link-btn" onClick={signOut}>{t('pn.signout')}</button>
+              </div>
+            )}
+          </>
+        )}
+        {tab === 'panel' && isOwner && <Panel business={business} onSignOut={signOut} />}
       </div>
       <nav className="app-footer">
         <button className={`foot-tab ${tab === 'inicio' ? 'active' : ''}`} onClick={() => setTab('inicio')}>

@@ -13,7 +13,7 @@ export const supabase = createClient(URL, KEY)
 // Turns the short error codes raised by the database into plain Spanish or English.
 const KNOWN = [
   'pendiente', 'vencida', 'sin_sellos', 'cancelada', 'sin_permiso', 'slug_en_uso',
-  'negocio_no_existe', 'nivel_no_existe', 'nombre_invalido', 'telefono_invalido', 'no_encontrada',
+  'negocio_no_existe', 'nivel_no_existe', 'nombre_invalido', 'telefono_invalido', 'no_encontrada', 'correo_invalido',
 ]
 
 export function friendlyError(error) {

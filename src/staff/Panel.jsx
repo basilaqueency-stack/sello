@@ -83,6 +83,89 @@ function TierForm({ businessId, tier, onDone, onCancel }) {
   )
 }
 
+function Team({ businessId }) {
+  const { t } = useLang()
+  const [data, setData] = useState(null)
+  const [email, setEmail] = useState('')
+  const [notice, setNotice] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.rpc('list_staff', { p_business: businessId })
+    if (!error) setData(data)
+  }, [businessId])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  async function invite(e) {
+    e.preventDefault()
+    setNotice(null)
+    setBusy(true)
+    const { data: r, error } = await supabase.rpc('invite_staff', { p_business: businessId, p_email: email })
+    setBusy(false)
+    if (error) return setNotice({ kind: 'error', text: friendlyError(error) })
+    setNotice({ kind: 'ok', text: r?.added ? t('tm.added', { email }) : t('tm.sent', { email }) })
+    setEmail('')
+    load()
+  }
+
+  async function remove(user) {
+    if (!window.confirm(t('tm.confirmRemove', { email: user.email }))) return
+    await supabase.rpc('remove_staff', { p_business: businessId, p_user: user.user_id })
+    load()
+  }
+
+  async function cancel(addr) {
+    await supabase.rpc('cancel_invite', { p_business: businessId, p_email: addr })
+    load()
+  }
+
+  return (
+    <>
+      <h2 className="section-label">{t('tm.title')}</h2>
+      <p className="muted small">{t('tm.help')}</p>
+      <div className="stack">
+        {data?.staff.map((u) => (
+          <div key={u.user_id} className="tier-row">
+            <span className="grow">
+              <strong className="break">{u.email}</strong>
+              <small>{u.role === 'owner' ? t('tm.owner') : t('tm.staff')}</small>
+            </span>
+            {u.role !== 'owner' && (
+              <button className="link-btn" onClick={() => remove(u)}>{t('tm.remove')}</button>
+            )}
+          </div>
+        ))}
+        {data?.invites.map((addr) => (
+          <div key={addr} className="tier-row off">
+            <span className="grow">
+              <strong className="break">{addr}</strong>
+              <small>{t('tm.pending')}</small>
+            </span>
+            <button className="link-btn" onClick={() => cancel(addr)}>{t('tm.cancelInvite')}</button>
+          </div>
+        ))}
+      </div>
+      <form onSubmit={invite} className="form stack" style={{ marginTop: 10 }}>
+        <div className="search-row" style={{ marginBottom: 0 }}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t('tm.emailPh')}
+            autoComplete="off"
+            required
+          />
+          <button className="btn scan" disabled={busy}>{t('tm.invite')}</button>
+        </div>
+        <Banner kind={notice?.kind}>{notice?.text}</Banner>
+      </form>
+    </>
+  )
+}
+
 export default function Panel({ business, onSignOut }) {
   const { t } = useLang()
   const [stats, setStats] = useState(null)
@@ -179,6 +262,8 @@ export default function Panel({ business, onSignOut }) {
           <button className="btn ghost" onClick={() => setEditing(EMPTY)}>{t('pn.new')}</button>
         </>
       )}
+
+      <Team businessId={business.id} />
 
       <h2 className="section-label">{t('pn.counter')}</h2>
       <div className="card center">

@@ -173,3 +173,5 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
   .btn, .tier-card, .person-row { transition: transform 0.08s ease; }
   .btn:active:not(:disabled) { transform: scale(0.985); }
 }
+
+.offline-tag { color: var(--accent); font-weight: 700; }
