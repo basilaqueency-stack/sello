@@ -4,6 +4,7 @@
   --card-deep: #a1f5f5; /* solid aqua: pass card, footer (same look, but opaque) */
   --text: #12292b; /* main copy */
   --small: #2c4a4d; /* small print */
+  --box-border: #741b47; /* outline of the aqua boxes: plum */
   --line: rgba(18, 41, 43, 0.22);
   --line-strong: rgba(18, 41, 43, 0.5);
   --pill-bg: rgba(255, 255, 255, 0.7);
@@ -87,7 +88,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 
 /* ----- boxes (burgundy) ----- */
 .card, .list-card, .tier-card, .person-row, .stat, .tier-row, .history li, .stamp-card {
-  background: var(--card); border: 1px solid var(--line); color: var(--text);
+  background: var(--card); border: 1px solid var(--box-border); color: var(--text);
 }
 .card { border-radius: 14px; padding: 14px; }
 .list-card { display: flex; justify-content: space-between; align-items: center; border-radius: 12px; padding: 14px; }
@@ -105,7 +106,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .banner.ok { background: #ddf1e4; color: #1d5a35; font-weight: 600; }
 
 /* ----- the pass ----- */
-.wallet-card { background: var(--card-deep); border: 1px solid var(--line); color: var(--text); border-radius: 18px; padding: 16px; text-align: center; margin: 8px 0 12px; }
+.wallet-card { background: var(--card-deep); border: 1px solid var(--box-border); color: var(--text); border-radius: 18px; padding: 16px; text-align: center; margin: 8px 0 12px; }
 .wallet-head { display: flex; justify-content: space-between; gap: 8px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--small); margin-bottom: 14px; }
 .qr-wrap { background: #fff; border-radius: 12px; padding: 12px; display: inline-block; line-height: 0; margin-bottom: 10px; }
 .wallet-name { font-family: 'Bricolage Grotesque Variable', 'Inter Variable', sans-serif; font-size: 18px; font-weight: 600; color: var(--bold); }
