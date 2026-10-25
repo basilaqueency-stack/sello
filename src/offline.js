@@ -75,7 +75,7 @@ export function searchRoster(businessId, text) {
   if (!q) return []
   const queued = getQueue()
   const adjust = (m) => {
-    const n = queued.filter((s) => s.membership_id === m.membership?.id).length
+    const n = queued.filter((s) => s.kind !== 'points' && s.membership_id === m.membership?.id).length
     if (!n || !m.membership || m.membership.credits_remaining == null) return m
     return { ...m, membership: { ...m.membership, credits_remaining: Math.max(0, m.membership.credits_remaining - n) } }
   }
@@ -91,6 +91,14 @@ export function searchRoster(businessId, text) {
 export const getQueue = () => read(K.queue, [])
 export const getFailed = () => read(K.failed, [])
 export const clearFailed = () => write(K.failed, [])
+
+// Queues points to give (visit points or a bill amount) for when there is signal.
+export function queuePoints(business, member, amount, client_id = crypto.randomUUID(), at = new Date().toISOString()) {
+  write(K.queue, [
+    ...getQueue(),
+    { kind: 'points', client_id, member_id: member.member_id, business_id: business.id, name: member.name, amount: amount ?? null, at },
+  ])
+}
 
 // Checks the saved copy of the membership, then queues the stamp. Returns { error } or { member }.
 export function queueStamp(business, member, client_id = crypto.randomUUID(), at = new Date().toISOString()) {
@@ -109,8 +117,10 @@ export function queueStamp(business, member, client_id = crypto.randomUUID(), at
     at,
   }
   write(K.queue, [...getQueue(), item])
+  const gives = business.points_enabled && business.points_mode === 'visit' ? business.points_per_visit : 0
   const updated = {
     ...member,
+    points: (member.points || 0) + gives,
     membership: { ...ms, credits_remaining: ms.kind === 'credits' ? left - 1 : ms.credits_remaining },
   }
   return { member: updated }
@@ -140,7 +150,15 @@ export async function flushQueue() {
       // After a long time offline the login has expired: renew it first, and wait if that isn't possible yet.
       const { data: auth } = await supabase.auth.getSession()
       if (!auth.session) break
-      const { error } = await sendStamp(item.membership_id, item.client_id, item.at, 10000)
+      const { error } =
+        item.kind === 'points'
+          ? await withTimeout(
+              supabase.rpc('award_points', {
+                p_member: item.member_id, p_amount: item.amount, p_client_id: item.client_id, p_at: item.at,
+              }),
+              10000
+            )
+          : await sendStamp(item.membership_id, item.client_id, item.at, 10000)
       if (isNetworkError(error) || error?.code === 'PGRST301' || /JWT|token/i.test(error?.message || '')) break
       write(K.queue, getQueue().filter((q) => q.client_id !== item.client_id))
       if (error) write(K.failed, [...getFailed(), { ...item, code: (error.message || '').trim() }])

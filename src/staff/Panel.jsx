@@ -166,7 +166,235 @@ function Team({ businessId }) {
   )
 }
 
-export default function Panel({ business, onSignOut }) {
+// Saves a few columns of the business row and reloads it.
+function useSaveBusiness(business, onChanged) {
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  async function save(patch) {
+    setError('')
+    setBusy(true)
+    const { error } = await supabase.from('businesses').update(patch).eq('id', business.id)
+    setBusy(false)
+    if (error) return setError(friendlyError(error))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+    onChanged()
+  }
+  return { save, saved, error, busy }
+}
+
+function PointsSettings({ business, onChanged }) {
+  const { t } = useLang()
+  const [f, setF] = useState({
+    points_enabled: business.points_enabled,
+    points_mode: business.points_mode,
+    points_per_visit: business.points_per_visit,
+    points_per_100: business.points_per_100,
+  })
+  const { save, saved, error, busy } = useSaveBusiness(business, onChanged)
+  const set = (k, v) => setF((x) => ({ ...x, [k]: v }))
+  return (
+    <form
+      className="stack form card"
+      onSubmit={(e) => {
+        e.preventDefault()
+        save({
+          points_enabled: f.points_enabled,
+          points_mode: f.points_mode,
+          points_per_visit: Number(f.points_per_visit),
+          points_per_100: Number(f.points_per_100),
+        })
+      }}
+    >
+      <label className="check">
+        <input type="checkbox" checked={f.points_enabled} onChange={(e) => set('points_enabled', e.target.checked)} />
+        {t('pp.enable')}
+      </label>
+      {f.points_enabled && (
+        <>
+          <label>
+            {t('pp.mode')}
+            <select value={f.points_mode} onChange={(e) => set('points_mode', e.target.value)}>
+              <option value="visit">{t('pp.visit')}</option>
+              <option value="spend">{t('pp.spend')}</option>
+            </select>
+          </label>
+          {f.points_mode === 'visit' ? (
+            <>
+              <label>
+                {t('pp.perVisit')}
+                <input type="number" min="1" value={f.points_per_visit} onChange={(e) => set('points_per_visit', e.target.value)} required />
+              </label>
+              <Banner kind="info">{t('pp.previewVisit', { n: f.points_per_visit || '…' })}</Banner>
+            </>
+          ) : (
+            <>
+              <label>
+                {t('pp.per100')}
+                <input type="number" min="1" value={f.points_per_100} onChange={(e) => set('points_per_100', e.target.value)} required />
+              </label>
+              <Banner kind="info">
+                {t('pp.previewSpend', { n: Math.floor(((Number(f.points_per_100) || 0) * 250) / 100) })}
+              </Banner>
+            </>
+          )}
+        </>
+      )}
+      <Banner kind="error">{error}</Banner>
+      <button className="btn primary" disabled={busy}>{saved ? t('pp.saved') : t('tf.save')}</button>
+    </form>
+  )
+}
+
+function RewardForm({ businessId, reward, onDone, onCancel }) {
+  const { t } = useLang()
+  const [f, setF] = useState(reward)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  async function submit(e) {
+    e.preventDefault()
+    setError('')
+    setBusy(true)
+    const row = { name: f.name.trim(), cost_points: Number(f.cost_points) }
+    const { error } = f.id
+      ? await supabase.from('rewards').update(row).eq('id', f.id)
+      : await supabase.from('rewards').insert({ ...row, business_id: businessId })
+    setBusy(false)
+    if (error) return setError(friendlyError(error))
+    onDone()
+  }
+  return (
+    <form onSubmit={submit} className="stack form card">
+      <label>
+        {t('rw.name')}
+        <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder={t('rw.namePh')} required />
+      </label>
+      <label>
+        {t('rw.cost')}
+        <input type="number" min="1" value={f.cost_points} onChange={(e) => setF({ ...f, cost_points: e.target.value })} required />
+      </label>
+      <Banner kind="error">{error}</Banner>
+      <div className="row">
+        <button className="btn primary" disabled={busy}>{t('tf.save')}</button>
+        <button type="button" className="btn ghost" onClick={onCancel}>{t('tf.cancel')}</button>
+      </div>
+    </form>
+  )
+}
+
+function Rewards({ businessId }) {
+  const { t } = useLang()
+  const [rewards, setRewards] = useState([])
+  const [editing, setEditing] = useState(null)
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('rewards').select('*').eq('business_id', businessId).order('cost_points')
+    setRewards(data || [])
+  }, [businessId])
+  useEffect(() => {
+    load()
+  }, [load])
+
+  if (editing)
+    return (
+      <RewardForm
+        businessId={businessId}
+        reward={editing}
+        onCancel={() => setEditing(null)}
+        onDone={() => {
+          setEditing(null)
+          load()
+        }}
+      />
+    )
+  return (
+    <>
+      <div className="stack">
+        {rewards.length === 0 && <p className="muted">{t('rw.none')}</p>}
+        {rewards.map((r) => (
+          <div key={r.id} className={`tier-row ${r.active ? '' : 'off'}`}>
+            <span className="grow">
+              <strong>{r.name}</strong>
+              <small>{t('pts.cost', { n: r.cost_points })}{r.active ? '' : ` · ${t('pn.hidden')}`}</small>
+            </span>
+            <button className="link-btn" onClick={() => setEditing(r)}>{t('pn.edit')}</button>
+            <button
+              className="link-btn"
+              onClick={async () => {
+                await supabase.from('rewards').update({ active: !r.active }).eq('id', r.id)
+                load()
+              }}
+            >
+              {r.active ? t('pn.hide') : t('pn.show')}
+            </button>
+            <button
+              className="link-btn"
+              onClick={async () => {
+                if (!window.confirm(t('rw.confirmDelete', { name: r.name }))) return
+                await supabase.from('rewards').delete().eq('id', r.id)
+                load()
+              }}
+            >
+              {t('rw.delete')}
+            </button>
+          </div>
+        ))}
+      </div>
+      <button className="btn ghost" onClick={() => setEditing({ id: null, name: '', cost_points: 100 })}>{t('rw.new')}</button>
+    </>
+  )
+}
+
+function DirectoryProfile({ business, onChanged }) {
+  const { t } = useLang()
+  const [f, setF] = useState({
+    listed: business.listed,
+    category: business.category || 'other',
+    neighborhood: business.neighborhood || '',
+    description: business.description || '',
+  })
+  const { save, saved, error, busy } = useSaveBusiness(business, onChanged)
+  return (
+    <form
+      className="stack form card"
+      onSubmit={(e) => {
+        e.preventDefault()
+        save({
+          listed: f.listed,
+          category: f.category,
+          neighborhood: f.neighborhood.trim() || null,
+          description: f.description.trim() || null,
+        })
+      }}
+    >
+      <label className="check">
+        <input type="checkbox" checked={f.listed} onChange={(e) => setF({ ...f, listed: e.target.checked })} />
+        {t('dr.listed')}
+      </label>
+      <label>
+        {t('dr.category')}
+        <select value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>
+          {['cafe', 'beauty', 'restaurant', 'other'].map((c) => (
+            <option key={c} value={c}>{t(`cat.${c}`)}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        {t('dr.neighborhood')}
+        <input value={f.neighborhood} maxLength={60} onChange={(e) => setF({ ...f, neighborhood: e.target.value })} placeholder={t('dr.neighborhoodPh')} />
+      </label>
+      <label>
+        {t('dr.description')}
+        <input value={f.description} maxLength={240} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder={t('dr.descPh')} />
+      </label>
+      <p className="muted small" style={{ margin: 0 }}>{t('dr.hint')}</p>
+      <Banner kind="error">{error}</Banner>
+      <button className="btn primary" disabled={busy}>{saved ? t('pp.saved') : t('tf.save')}</button>
+    </form>
+  )
+}
+
+export default function Panel({ business, onSignOut, onChanged }) {
   const { t } = useLang()
   const [stats, setStats] = useState(null)
   const [tiers, setTiers] = useState([])
@@ -262,6 +490,18 @@ export default function Panel({ business, onSignOut }) {
           <button className="btn ghost" onClick={() => setEditing(EMPTY)}>{t('pn.new')}</button>
         </>
       )}
+
+      <h2 className="section-label">{t('pp.title')}</h2>
+      <PointsSettings key={`${business.points_enabled}${business.points_mode}${business.points_per_visit}${business.points_per_100}`} business={business} onChanged={onChanged} />
+      {business.points_enabled && (
+        <>
+          <h2 className="section-label">{t('rw.title')}</h2>
+          <Rewards businessId={business.id} />
+        </>
+      )}
+
+      <h2 className="section-label">{t('dr.title')}</h2>
+      <DirectoryProfile business={business} onChanged={onChanged} />
 
       <Team businessId={business.id} />
 

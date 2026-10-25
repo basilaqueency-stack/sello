@@ -290,7 +290,7 @@ export default function Staff() {
             )}
           </>
         )}
-        {tab === 'panel' && isOwner && <Panel business={business} onSignOut={signOut} />}
+        {tab === 'panel' && isOwner && <Panel business={business} onSignOut={signOut} onChanged={loadBusiness} />}
       </div>
       <nav className="app-footer">
         <button className={`foot-tab ${tab === 'inicio' ? 'active' : ''}`} onClick={() => setTab('inicio')}>

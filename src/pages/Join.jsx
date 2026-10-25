@@ -60,9 +60,13 @@ export default function Join() {
 
   return (
     <main className="page">
-      <p className="eyebrow">{biz.name}</p>
+      <p className="eyebrow">
+        {biz.name}
+        {biz.neighborhood ? ` · ${biz.neighborhood}` : ''}
+      </p>
       <h1 className="title">{tr('join.pick')}</h1>
 
+      {biz.description && <p className="muted">{biz.description}</p>}
       {biz.tiers.length === 0 && <p className="muted">{tr('join.noTiers')}</p>}
 
       <div className="stack">

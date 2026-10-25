@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Join from './pages/Join.jsx'
 import Pass from './pages/Pass.jsx'
+import Explore from './pages/Explore.jsx'
 import { useLang } from './i18n.js'
 
 // Staff screens (and the camera scanner) are loaded only when a business opens
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/join/:slug" element={<Join />} />
         <Route path="/pass/:token" element={<Pass />} />
+        <Route path="/explore" element={<Explore />} />
         <Route path="/staff" element={<Staff />} />
         <Route path="*" element={<Home />} />
       </Routes>

@@ -26,6 +26,9 @@ export default function Home() {
         </div>
       )}
 
+      <Link to="/explore" className="btn primary" style={{ marginTop: 18 }}>
+        {t('home.explore')}
+      </Link>
       <div className="spacer" />
       <Link to="/staff" className="btn ghost">
         {t('home.biz')}

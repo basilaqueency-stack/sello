@@ -47,3 +47,22 @@ Online payments (memberships are confirmed by hand at the counter), WhatsApp rem
 the business directory, staff-invite flow, and offline stamping for the staff app.
 
 `sello-wireframes.html` is the interactive design mockup for all of the above.
+
+
+## Points, rewards and the directory
+
+Run `supabase/updates/2026-10-26-points-directory.sql` once (fresh installs get it from `schema.sql`).
+
+- Owners turn points on in **Dashboard > Points & rewards**: either fixed points per visit (added automatically with each stamp) or points per amount spent (staff types the bill).
+- Rewards are a menu (name + points cost). Staff taps **Redeem** on the customer's screen; balances can never go below zero.
+- **Explore** (`/explore`) is the public directory. Businesses are listed by default and can switch it off in the Dashboard. Only businesses with at least one visible membership appear.
+
+## Wallet passes (Google / Apple)
+
+The "Add to Wallet" buttons stay hidden until the secrets exist. Add them in Vercel > Project > Settings > Environment Variables, then redeploy.
+
+Google Wallet (free): `GOOGLE_WALLET_ISSUER_ID`, `GOOGLE_WALLET_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_WALLET_PRIVATE_KEY` (the service account key; `\n` line breaks are fine).
+
+Apple Wallet (needs the Apple Developer account, USD 99/yr): `APPLE_PASS_TYPE_ID`, `APPLE_TEAM_ID`, `APPLE_SIGNER_CERT`, `APPLE_SIGNER_KEY` (both base64 of the PEM files), `APPLE_WWDR_CERT` (base64 of Apple's WWDR certificate), optional `APPLE_SIGNER_KEY_PASSPHRASE`.
+
+A wallet pass is a snapshot taken when it is added (name, plan, points then). The QR code always works because it only holds the private pass link; live updating of the points shown inside the wallet is a later step.

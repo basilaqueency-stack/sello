@@ -6,6 +6,77 @@ import { fmtDate, fmtDateTime, money, statusLabel, savePass } from '../lib.js'
 import { useLang } from '../i18n.js'
 import { Banner, StampGrid } from '../components.jsx'
 
+// "Add to Wallet" buttons appear only once the wallet accounts are set up on the server.
+function WalletButtons({ token }) {
+  const { t } = useLang()
+  const [cfg, setCfg] = useState(null)
+  useEffect(() => {
+    fetch('/api/wallet?type=config')
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setCfg)
+      .catch(() => {})
+  }, [])
+  if (!cfg || (!cfg.google && !cfg.apple)) return null
+  return (
+    <div className="wallet-btns">
+      {cfg.google && <a className="btn ghost" href={`/api/wallet?type=google&token=${token}`}>{t('wal.google')}</a>}
+      {cfg.apple && <a className="btn ghost" href={`/api/wallet?type=apple&token=${token}`}>{t('wal.apple')}</a>}
+    </div>
+  )
+}
+
+function Points({ pass }) {
+  const { t } = useLang()
+  const label = (h) =>
+    h.reason === 'redeem' ? t('pts.redeem', { name: h.reward_name || '' }) : t(`pts.${h.reason}`)
+  return (
+    <>
+      <h2 className="section-label">{t('pts.title')}</h2>
+      <div className="card center">
+        <div className="points-big">{t('pts.balance', { n: pass.points })}</div>
+      </div>
+      {pass.rewards?.length > 0 && (
+        <>
+          <h2 className="section-label">{t('pts.rewards')}</h2>
+          <div className="stack">
+            {pass.rewards.map((r) => {
+              const pct = Math.min(100, Math.round((pass.points / r.cost_points) * 100))
+              return (
+                <div key={r.id} className="card">
+                  <div className="reward-row">
+                    <strong>{r.name}</strong>
+                    <span className="mono small">{t('pts.cost', { n: r.cost_points })}</span>
+                  </div>
+                  <div className="bar"><i style={{ width: `${pct}%` }} /></div>
+                  <small className="muted">
+                    {pass.points >= r.cost_points ? t('pts.ready') : t('pts.need', { n: r.cost_points - pass.points })}
+                  </small>
+                </div>
+              )
+            })}
+          </div>
+          <p className="muted small center">{t('pts.show')}</p>
+        </>
+      )}
+      {pass.points_history?.length > 0 && (
+        <>
+          <h2 className="section-label">{t('pts.history')}</h2>
+          <ul className="history">
+            {pass.points_history.map((h, i) => (
+              <li key={i}>
+                <span>{label(h)}</span>
+                <small>
+                  {h.delta > 0 ? '+' : ''}{h.delta} · {fmtDateTime(h.at)}
+                </small>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  )
+}
+
 const cacheKey = (token) => `sello_pass_${token}`
 
 function readCache(token) {
@@ -83,6 +154,7 @@ export default function Pass() {
       </div>
 
       <div className={`status-pill ${status}`}>{statusLabel(status)}</div>
+      <WalletButtons token={token} />
 
       {status === 'pending' && (
         <Banner kind="info">
@@ -97,6 +169,8 @@ export default function Pass() {
 
       {isActive && <StampGrid membership={ms} dark />}
       {isActive && <p className="muted center">{t('pass.renews', { date: fmtDate(ms.expires_at) })}</p>}
+
+      {pass.business.points_enabled && <Points pass={pass} />}
 
       {pass.history?.length > 0 && (
         <>

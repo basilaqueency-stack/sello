@@ -3,7 +3,7 @@ import { supabase, friendlyError } from '../supabase.js'
 import { fmtDate, fmtDateTime, money, statusLabel } from '../lib.js'
 import { useLang, tr } from '../i18n.js'
 import {
-  clearFailed, flushQueue, getFailed, getQueue, isNetworkError, queueStamp, refreshRoster, searchRoster, sendStamp, withTimeout,
+  clearFailed, flushQueue, getFailed, getQueue, isNetworkError, queuePoints, queueStamp, refreshRoster, searchRoster, sendStamp, withTimeout,
 } from '../offline.js'
 import { Banner, StampGrid } from '../components.jsx'
 
@@ -28,6 +28,12 @@ function ago(iso) {
   return fmtDate(iso)
 }
 
+function spendPreview(business, amount, t) {
+  if (business.points_mode !== 'spend' || !(Number(amount) > 0)) return null
+  const n = Math.floor((Number(amount) * business.points_per_100) / 100)
+  return <p className="muted small">{t('ck.earnPreview', { n })}</p>
+}
+
 export default function Checkin({ business }) {
   const { t } = useLang()
   const [query, setQuery] = useState('')
@@ -40,6 +46,19 @@ export default function Checkin({ business }) {
   const [down, setDown] = useState(!navigator.onLine) // true when requests are failing for lack of signal
   const [pending, setPending] = useState(() => getQueue().length)
   const [failed, setFailed] = useState(() => getFailed())
+  const [amount, setAmount] = useState('')
+  const [rewards, setRewards] = useState([])
+
+  useEffect(() => {
+    if (!business.points_enabled) return
+    supabase
+      .from('rewards')
+      .select('*')
+      .eq('business_id', business.id)
+      .eq('active', true)
+      .order('cost_points')
+      .then(({ data }) => setRewards(data || []))
+  }, [business.id, business.points_enabled])
 
   const loadRecent = useCallback(async () => {
     const { data, error } = await withTimeout(supabase.rpc('recent_checkins', { p_business: business.id }))
@@ -158,6 +177,49 @@ export default function Checkin({ business }) {
     loadRecent()
   }
 
+  // Visit points are added automatically with each stamp; this adds points for a bill, or for a visit with no stamp.
+  async function addPoints() {
+    const spend = business.points_mode === 'spend'
+    const value = spend ? Number(amount) : null
+    if (spend && !(value > 0)) return setNotice({ kind: 'error', text: friendlyError({ message: 'monto_invalido' }) })
+    setNotice(null)
+    setBusy(true)
+    const client_id = crypto.randomUUID()
+    const at = new Date().toISOString()
+    const { data, error } = await withTimeout(
+      supabase.rpc('award_points', { p_member: selected.member_id, p_amount: value, p_client_id: client_id, p_at: at })
+    )
+    setBusy(false)
+    if (isNetworkError(error)) {
+      setDown(true)
+      const gain = spend ? Math.floor((value * business.points_per_100) / 100) : business.points_per_visit
+      if (gain < 1) return setNotice({ kind: 'error', text: friendlyError({ message: 'monto_invalido' }) })
+      queuePoints(business, selected, value, client_id, at)
+      setSelected({ ...selected, points: (selected.points || 0) + gain })
+      setPending(getQueue().length)
+      setAmount('')
+      return setNotice({ kind: 'ok', text: t('ck.pointsQueued') })
+    }
+    if (error) return setNotice({ kind: 'error', text: friendlyError(error) })
+    setDown(false)
+    setSelected(data)
+    setAmount('')
+    setNotice({ kind: 'ok', text: t('ck.pointsAdded', { n: data.points }) })
+  }
+
+  async function redeemReward(r) {
+    if (!window.confirm(t('ck.confirmRedeem', { name: r.name, cost: r.cost_points }))) return
+    setNotice(null)
+    setBusy(true)
+    const { data, error } = await withTimeout(
+      supabase.rpc('redeem_reward', { p_member: selected.member_id, p_reward: r.id, p_client_id: crypto.randomUUID() })
+    )
+    setBusy(false)
+    if (error) return setNotice({ kind: 'error', text: isNetworkError(error) ? t('of.needSignal') : friendlyError(error) })
+    setSelected(data)
+    setNotice({ kind: 'ok', text: t('ck.redeemed', { name: r.name }) })
+  }
+
   const statusBanners = (
     <>
       {down && <Banner kind="warn">{t('of.banner')}</Banner>}
@@ -241,6 +303,58 @@ export default function Checkin({ business }) {
             <button className="btn primary" onClick={activate} disabled={busy}>
               {t('ck.renew', { price: money(ms.price_mxn) })}
             </button>
+          </>
+        )}
+
+        {business.points_enabled && (
+          <>
+            <h2 className="section-label">{t('ck.points')}</h2>
+            <div className="card center">
+              <div className="points-big">{t('ck.pointsBal', { n: selected.points || 0 })}</div>
+            </div>
+            {business.points_mode === 'spend' ? (
+              <div className="search-row" style={{ marginTop: 10 }}>
+                <input
+                  type="number"
+                  min="1"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder={t('ck.amount')}
+                />
+                <button className="btn scan" onClick={addPoints} disabled={busy}>{t('ck.addSpend')}</button>
+              </div>
+            ) : (
+              status !== 'active' && (
+                <button className="btn ghost" style={{ marginTop: 10 }} onClick={addPoints} disabled={busy}>
+                  {t('ck.addVisit', { n: business.points_per_visit })}
+                </button>
+              )
+            )}
+            {spendPreview(business, amount, t)}
+
+            <h2 className="section-label">{t('ck.redeemTitle')}</h2>
+            {rewards.length === 0 ? (
+              <p className="muted small">{t('ck.noRewards')}</p>
+            ) : (
+              <div className="stack">
+                {rewards.map((r) => (
+                  <div key={r.id} className="person-row static">
+                    <span className="grow">
+                      <strong>{r.name}</strong>
+                      <small>{t('pts.cost', { n: r.cost_points })}</small>
+                    </span>
+                    <button
+                      className="btn scan"
+                      disabled={busy || (selected.points || 0) < r.cost_points}
+                      onClick={() => redeemReward(r)}
+                    >
+                      {t('ck.redeem')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

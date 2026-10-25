@@ -175,3 +175,16 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 }
 
 .offline-tag { color: var(--accent); font-weight: 700; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.chip { background: none; border: 1px solid var(--box-border); border-radius: 16px; padding: 5px 12px; cursor: pointer; font-size: 13px; color: var(--text); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+a.tier-card { text-decoration: none; }
+.points-big { font-family: 'Bricolage Grotesque Variable', 'Inter Variable', sans-serif; font-size: 34px; font-weight: 700; color: var(--bold); line-height: 1.1; }
+.reward-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.reward-row .bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 6px; overflow: hidden; }
+.reward-row .bar > i { display: block; height: 100%; background: var(--accent); }
+.wallet-btns { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+
+.form label.check { flex-direction: row; align-items: center; gap: 10px; font-family: 'Inter Variable', system-ui, sans-serif; font-size: 15px; color: var(--text); }
+.form label.check input { width: 20px; height: 20px; accent-color: var(--accent); }

@@ -2,7 +2,7 @@
 // - Pages: try the network first, fall back to the last saved copy.
 // - Other files from this site: serve the saved copy if we have one.
 // Data from the database is never cached here; the pass page keeps its own copy.
-const CACHE = 'sello-v2'
+const CACHE = 'sello-v3'
 
 self.addEventListener('install', () => self.skipWaiting())
 
@@ -20,6 +20,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return
   const url = new URL(req.url)
   if (url.origin !== self.location.origin) return
+  if (url.pathname.startsWith('/api/')) return // wallet passes are always fresh
 
   if (req.mode === 'navigate') {
     event.respondWith(
