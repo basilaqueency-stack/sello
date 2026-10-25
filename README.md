@@ -24,6 +24,16 @@ Built as a web app (PWA): React + Vite, with Supabase for the database and login
 3. **Run it** (needs Node 20+): `npm install`, then `npm run dev`.
 4. **Publish it**: import this repository in Vercel. Defaults work (Vite is detected automatically).
 
+## Database updates
+
+If you already ran `supabase/schema.sql`, run any newer file from `supabase/updates/` once, in date order.
+Fresh installs only need `schema.sql`, which always includes every update.
+
+## Phone numbers
+
+Customers pick a country and type the local number. We store it in full international digits (Mexico = `52` + 10 digits).
+Some WhatsApp sending services want Mexican mobiles as `521` + 10 digits; convert at sending time, not in the database.
+
 ## Keys and secrets
 
 `src/supabase.js` contains the Supabase project URL and **publishable** key. Both are public by design and safe to commit.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase, friendlyError } from '../supabase.js'
-import { money, savePass } from '../lib.js'
+import { COUNTRIES, buildWhatsApp, money, savePass } from '../lib.js'
 import { Banner } from '../components.jsx'
 
 function tierDetail(t, unit) {
@@ -16,8 +16,11 @@ export default function Join() {
   const [biz, setBiz] = useState(undefined) // undefined = loading, null = not found
   const [tier, setTier] = useState(null)
   const [name, setName] = useState('')
+  const [country, setCountry] = useState('mx')
+  const [otherCode, setOtherCode] = useState('')
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
+  const wa = buildWhatsApp(country, otherCode, phone)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -30,12 +33,13 @@ export default function Join() {
   async function submit(e) {
     e.preventDefault()
     setError('')
+    if (!wa.ok) return setError(wa.error || 'Escribe tu número de WhatsApp.')
     setBusy(true)
     const { data, error } = await supabase.rpc('join_business', {
       p_slug: slug,
       p_tier_id: tier.id,
       p_name: name,
-      p_phone: phone,
+      p_phone: wa.digits,
     })
     setBusy(false)
     if (error) return setError(friendlyError(error))
@@ -82,14 +86,38 @@ export default function Join() {
           </label>
           <label>
             WhatsApp
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="322 123 4567"
-              inputMode="tel"
-              required
-            />
+            <div className="phone-row">
+              <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label="País">
+                {COUNTRIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+              {country === 'other' && (
+                <input
+                  className="code"
+                  value={otherCode}
+                  onChange={(e) => setOtherCode(e.target.value)}
+                  placeholder="Código"
+                  inputMode="numeric"
+                  aria-label="Código de país"
+                />
+              )}
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={country === 'mx' ? '322 123 4567' : '604 555 0123'}
+                inputMode="tel"
+                required
+              />
+            </div>
           </label>
+          {wa.ok ? (
+            <p className="hint">Te escribiremos por WhatsApp al {wa.display}</p>
+          ) : (
+            phone && <p className="hint warn">{wa.error}</p>
+          )}
           <Banner kind="error">{error}</Banner>
           <button className="btn primary" disabled={busy}>
             {busy ? 'Creando tu pase…' : 'Obtener mi pase'}

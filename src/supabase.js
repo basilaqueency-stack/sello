@@ -28,6 +28,8 @@ export function friendlyError(error) {
   if (!error) return ''
   const raw = (error.message || '').trim()
   if (MESSAGES[raw]) return MESSAGES[raw]
-  if (/Failed to fetch|NetworkError|network/i.test(raw)) return 'Sin conexión. Revisa tu señal e inténtalo de nuevo.'
+  // "Load failed" is how iPhones word a request that never reached the server.
+  if (/Failed to fetch|Load failed|NetworkError|network/i.test(raw))
+    return 'No se pudo conectar. Revisa tu señal e inténtalo de nuevo; tus datos siguen aquí.'
   return raw || 'Algo salió mal. Inténtalo de nuevo.'
 }

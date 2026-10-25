@@ -61,6 +61,12 @@ a { color: inherit; text-decoration: none; }
 .back-link { display: inline-block; background: none; border: none; padding: 4px 0; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: var(--small); font-weight: 600; }
 
 /* ----- forms ----- */
+.phone-row { display: flex; gap: 8px; }
+.phone-row select { width: auto; flex: 0 0 auto; max-width: 48%; }
+.phone-row input { flex: 1; min-width: 0; }
+.phone-row input.code { flex: 0 0 76px; }
+.hint { margin: -4px 0 0; font-size: 13px; color: var(--small); }
+.hint.warn { color: var(--err); }
 .stack + .form { margin-top: 18px; }
 .stack + .btn { margin-top: 10px; }
 .form label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-family: 'Space Mono', monospace; color: var(--small); }
