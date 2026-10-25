@@ -1,0 +1,185 @@
+import { useCallback, useEffect, useState } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
+import { supabase, friendlyError } from '../supabase.js'
+import { money } from '../lib.js'
+import { Banner } from '../components.jsx'
+
+const EMPTY = { id: null, name: '', price_mxn: '', kind: 'credits', credits_per_period: 10, period_days: 30 }
+
+function TierForm({ businessId, tier, onDone, onCancel }) {
+  const [f, setF] = useState(tier)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const set = (k, v) => setF((x) => ({ ...x, [k]: v }))
+
+  async function submit(e) {
+    e.preventDefault()
+    setError('')
+    setBusy(true)
+    const row = {
+      name: f.name.trim(),
+      price_mxn: Number(f.price_mxn),
+      kind: f.kind,
+      credits_per_period: f.kind === 'credits' ? Number(f.credits_per_period) : null,
+      period_days: Number(f.period_days),
+    }
+    const { error } = f.id
+      ? await supabase.from('tiers').update(row).eq('id', f.id)
+      : await supabase.from('tiers').insert({ ...row, business_id: businessId })
+    setBusy(false)
+    if (error) return setError(friendlyError(error))
+    onDone()
+  }
+
+  return (
+    <form onSubmit={submit} className="stack form card">
+      <label>
+        Nombre
+        <input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="10 cafés al mes" required />
+      </label>
+      <label>
+        Precio (MXN)
+        <input type="number" min="0" value={f.price_mxn} onChange={(e) => set('price_mxn', e.target.value)} required />
+      </label>
+      <label>
+        Tipo
+        <select value={f.kind} onChange={(e) => set('kind', e.target.value)}>
+          <option value="credits">Cantidad de sellos</option>
+          <option value="unlimited">Ilimitado</option>
+        </select>
+      </label>
+      {f.kind === 'credits' && (
+        <label>
+          Sellos por periodo
+          <input
+            type="number"
+            min="1"
+            value={f.credits_per_period}
+            onChange={(e) => set('credits_per_period', e.target.value)}
+            required
+          />
+        </label>
+      )}
+      <label>
+        Duración (días)
+        <input type="number" min="1" value={f.period_days} onChange={(e) => set('period_days', e.target.value)} required />
+      </label>
+      <Banner kind="error">{error}</Banner>
+      <div className="row">
+        <button className="btn primary" disabled={busy}>Guardar</button>
+        <button type="button" className="btn ghost" onClick={onCancel}>Cancelar</button>
+      </div>
+    </form>
+  )
+}
+
+export default function Panel({ business, onSignOut }) {
+  const [stats, setStats] = useState(null)
+  const [tiers, setTiers] = useState([])
+  const [editing, setEditing] = useState(null)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState('')
+
+  const joinUrl = `${window.location.origin}/join/${business.slug}`
+
+  const load = useCallback(async () => {
+    const [s, t] = await Promise.all([
+      supabase.rpc('get_stats', { p_business: business.id }),
+      supabase.from('tiers').select('*').eq('business_id', business.id).order('price_mxn'),
+    ])
+    if (s.error) setError(friendlyError(s.error))
+    else setStats(s.data)
+    if (!t.error) setTiers(t.data)
+  }, [business.id])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  async function toggleActive(t) {
+    await supabase.from('tiers').update({ active: !t.active }).eq('id', t.id)
+    load()
+  }
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(joinUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* clipboard can be blocked; the link is visible to copy by hand */
+    }
+  }
+
+  return (
+    <div className="screen-pad">
+      <div className="topline">
+        <h2 className="title small">Panel</h2>
+        <span className="mono small">🔒 Solo dueño</span>
+      </div>
+      <Banner kind="error">{error}</Banner>
+
+      {stats && (
+        <div className="stat-grid">
+          <div className="stat wide">
+            <strong>{stats.active_members}</strong>
+            <span>miembros activos</span>
+          </div>
+          <div className="stat">
+            <strong>{money(stats.monthly_mxn)}</strong>
+            <span>al mes</span>
+          </div>
+          <div className="stat">
+            <strong>{stats.expiring_week}</strong>
+            <span>vencen esta semana</span>
+          </div>
+        </div>
+      )}
+
+      <h2 className="section-label">Membresías</h2>
+      {editing ? (
+        <TierForm
+          businessId={business.id}
+          tier={editing}
+          onCancel={() => setEditing(null)}
+          onDone={() => {
+            setEditing(null)
+            load()
+          }}
+        />
+      ) : (
+        <>
+          <div className="stack">
+            {tiers.length === 0 && <p className="muted">Crea tu primera membresía para que tus clientes puedan unirse.</p>}
+            {tiers.map((t) => (
+              <div key={t.id} className={`tier-row ${t.active ? '' : 'off'}`}>
+                <span className="grow">
+                  <strong>{t.name}</strong>
+                  <small>
+                    {money(t.price_mxn)} · {t.kind === 'unlimited' ? 'ilimitado' : `${t.credits_per_period} sellos`} · {t.period_days} días
+                    {t.active ? '' : ' · oculta'}
+                  </small>
+                </span>
+                <button className="link-btn" onClick={() => setEditing(t)}>Editar</button>
+                <button className="link-btn" onClick={() => toggleActive(t)}>{t.active ? 'Ocultar' : 'Mostrar'}</button>
+              </div>
+            ))}
+          </div>
+          <button className="btn ghost" onClick={() => setEditing(EMPTY)}>+ Nueva membresía</button>
+        </>
+      )}
+
+      <h2 className="section-label">Código para tu mostrador</h2>
+      <div className="card center">
+        <div className="qr-wrap">
+          <QRCodeSVG value={joinUrl} size={160} fgColor="#12292B" />
+        </div>
+        <p className="mono small break">{joinUrl}</p>
+        <button className="btn ghost" onClick={copy}>{copied ? 'Copiado ✓' : 'Copiar enlace'}</button>
+        <p className="muted small">Imprime este código: tus clientes lo escanean para unirse.</p>
+      </div>
+
+      <button className="link-btn" onClick={onSignOut}>Cerrar sesión</button>
+    </div>
+  )
+}
