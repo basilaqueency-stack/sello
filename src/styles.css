@@ -97,7 +97,9 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .tier-card strong { font-size: 16px; }
 .tier-card span { font-size: 13px; color: var(--small); }
 .tier-card small { color: var(--small); }
-.tier-card.selected { border: 2px solid var(--accent); padding: 13px; }
+.tier-card { position: relative; }
+.tier-card.selected { border: 3px solid var(--box-border); padding: 12px; background: rgba(18, 231, 231, 0.55); }
+.tier-card.selected::after { content: '✓'; position: absolute; top: 10px; right: 12px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 
 .banner { border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 8px 0; }
 .banner.info { background: #e4eef9; color: #12292b; }
