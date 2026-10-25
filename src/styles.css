@@ -48,6 +48,11 @@ a { color: inherit; text-decoration: none; }
 .row { display: flex; gap: 10px; }
 .topline { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
 
+/* ----- language switch ----- */
+.lang-bar { max-width: 520px; margin: 0 auto; padding: 8px 16px 0; padding-top: max(8px, env(safe-area-inset-top)); display: flex; justify-content: flex-end; gap: 4px; }
+.lang-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 3px 9px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--small); }
+.lang-bar button.on { background: var(--card); color: var(--text); border-color: var(--line-strong); font-weight: 700; }
+
 /* ----- buttons ----- */
 .btn {
   display: block; width: 100%; text-align: center; cursor: pointer;

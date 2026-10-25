@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase, friendlyError } from '../supabase.js'
-import { COUNTRIES, buildWhatsApp, money, savePass } from '../lib.js'
+import { countries, buildWhatsApp, money, savePass } from '../lib.js'
+import { useLang } from '../i18n.js'
 import { Banner } from '../components.jsx'
 
-function tierDetail(t, unit) {
+function tierDetail(tr, t, unit) {
   return t.kind === 'unlimited'
-    ? `${unit} ilimitados cada ${t.period_days} días`
-    : `${t.credits_per_period} ${unit} cada ${t.period_days} días`
+    ? tr('tier.unlimited', { unit, days: t.period_days })
+    : tr('tier.limited', { n: t.credits_per_period, unit, days: t.period_days })
 }
 
 export default function Join() {
+  const { t: tr } = useLang()
   const { slug } = useParams()
   const navigate = useNavigate()
   const [biz, setBiz] = useState(undefined) // undefined = loading, null = not found
@@ -33,7 +35,7 @@ export default function Join() {
   async function submit(e) {
     e.preventDefault()
     setError('')
-    if (!wa.ok) return setError(wa.error || 'Escribe tu número de WhatsApp.')
+    if (!wa.ok) return setError(wa.error || tr('join.needPhone'))
     setBusy(true)
     const { data, error } = await supabase.rpc('join_business', {
       p_slug: slug,
@@ -47,21 +49,21 @@ export default function Join() {
     navigate(`/pass/${data}`)
   }
 
-  if (biz === undefined) return <main className="page"><p className="muted">Cargando…</p></main>
+  if (biz === undefined) return <main className="page"><p className="muted">{tr('loading')}</p></main>
   if (biz === null)
     return (
       <main className="page">
-        <h1 className="title">No encontramos este negocio</h1>
-        <Banner kind="error">{error || 'Revisa que el enlace o el código QR esté completo.'}</Banner>
+        <h1 className="title">{tr('join.notFound')}</h1>
+        <Banner kind="error">{error || tr('join.notFoundHelp')}</Banner>
       </main>
     )
 
   return (
     <main className="page">
       <p className="eyebrow">{biz.name}</p>
-      <h1 className="title">Elige tu membresía</h1>
+      <h1 className="title">{tr('join.pick')}</h1>
 
-      {biz.tiers.length === 0 && <p className="muted">Este negocio aún no tiene membresías disponibles.</p>}
+      {biz.tiers.length === 0 && <p className="muted">{tr('join.noTiers')}</p>}
 
       <div className="stack">
         {biz.tiers.map((t) => (
@@ -72,8 +74,8 @@ export default function Join() {
             onClick={() => setTier(t)}
           >
             <strong>{t.name}</strong>
-            <span className="mono">{money(t.price_mxn)} / {t.period_days} días</span>
-            <small>{tierDetail(t, biz.unit_label)}</small>
+            <span className="mono">{tr('tier.price', { price: money(t.price_mxn), days: t.period_days })}</span>
+            <small>{tierDetail(tr, t, biz.unit_label)}</small>
           </button>
         ))}
       </div>
@@ -81,14 +83,14 @@ export default function Join() {
       {tier && (
         <form onSubmit={submit} className="stack form">
           <label>
-            Nombre
+            {tr('join.name')}
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ana Torres" required />
           </label>
           <label>
             WhatsApp
             <div className="phone-row">
-              <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label="País">
-                {COUNTRIES.map((c) => (
+              <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label={tr('join.country')}>
+                {countries().map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.label}
                   </option>
@@ -99,9 +101,9 @@ export default function Join() {
                   className="code"
                   value={otherCode}
                   onChange={(e) => setOtherCode(e.target.value)}
-                  placeholder="Código"
+                  placeholder={tr('join.code')}
                   inputMode="numeric"
-                  aria-label="Código de país"
+                  aria-label={tr('join.codeLabel')}
                 />
               )}
               <input
@@ -114,16 +116,16 @@ export default function Join() {
             </div>
           </label>
           {wa.ok ? (
-            <p className="hint">Te escribiremos por WhatsApp al {wa.display}</p>
+            <p className="hint">{tr('join.willWrite', { n: wa.display })}</p>
           ) : (
             phone && <p className="hint warn">{wa.error}</p>
           )}
           <Banner kind="error">{error}</Banner>
           <button className="btn primary" disabled={busy}>
-            {busy ? 'Creando tu pase…' : 'Obtener mi pase'}
+            {busy ? tr('join.busy') : tr('join.submit')}
           </button>
           <p className="muted small">
-            Pagas en el mostrador y el personal activa tu membresía. Tu pase aparece aquí al instante.
+            {tr('join.payNote')}
           </p>
         </form>
       )}

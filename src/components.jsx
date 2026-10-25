@@ -1,4 +1,5 @@
 // Pieces shared by the customer and staff screens.
+import { tr } from './i18n.js'
 
 // The stamp card: filled circles for stamps used, empty for stamps left.
 export function StampGrid({ membership, dark = false }) {
@@ -6,7 +7,7 @@ export function StampGrid({ membership, dark = false }) {
   if (membership.kind === 'unlimited') {
     return (
       <div className={`stamp-card ${dark ? 'on-dark' : ''}`}>
-        <div className="stamp-unlimited">Ilimitado</div>
+        <div className="stamp-unlimited">{tr('stamp.unlimited')}</div>
       </div>
     )
   }
@@ -24,9 +25,9 @@ export function StampGrid({ membership, dark = false }) {
       </div>
       <div className="stamp-meta">
         <span>
-          {used}/{total} sellados
+          {tr('stamp.used', { used, total })}
         </span>
-        <span>quedan {left}</span>
+        <span>{tr('stamp.left', { n: left })}</span>
       </div>
     </div>
   )

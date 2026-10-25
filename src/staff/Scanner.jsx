@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
+import { tr } from '../i18n.js'
 
 // Full-screen camera view that reads a customer's QR code.
 export default function Scanner({ onResult, onClose }) {
@@ -17,7 +18,7 @@ export default function Scanner({ onResult, onClose }) {
         onResult(text)
       },
       () => {}
-    ).catch(() => setError('No pudimos abrir la cámara. Permite el acceso a la cámara o busca por teléfono.'))
+    ).catch(() => setError(tr('sc.error')))
     return () => {
       qr.stop()
         .then(() => qr.clear())
@@ -29,8 +30,8 @@ export default function Scanner({ onResult, onClose }) {
   return (
     <div className="scanner">
       <div className="scanner-top">
-        <strong>Escanear código</strong>
-        <button className="link-btn light" onClick={onClose}>Cerrar</button>
+        <strong>{tr('sc.title')}</strong>
+        <button className="link-btn light" onClick={onClose}>{tr('sc.close')}</button>
       </div>
       <div id="qr-reader" />
       {error && <p className="scanner-error">{error}</p>}

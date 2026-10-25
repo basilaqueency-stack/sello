@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { tr } from './i18n.js'
 
 // These two values are PUBLIC by design (they ship to every visitor's browser).
 // What keeps data safe is the row-level security in supabase/schema.sql.
@@ -9,27 +10,18 @@ const KEY =
 
 export const supabase = createClient(URL, KEY)
 
-// Turns the short error codes raised by the database into plain Spanish.
-const MESSAGES = {
-  pendiente: 'Esta membresía aún no está pagada. Confirma el pago para activarla.',
-  vencida: 'La membresía está vencida. Renueva para seguir sellando.',
-  sin_sellos: 'No quedan sellos este periodo.',
-  cancelada: 'Esta membresía fue cancelada.',
-  sin_permiso: 'No tienes permiso para hacer esto.',
-  slug_en_uso: 'Ese nombre de enlace ya está en uso. Prueba con otro.',
-  negocio_no_existe: 'No encontramos este negocio.',
-  nivel_no_existe: 'Esa membresía ya no está disponible.',
-  nombre_invalido: 'Escribe tu nombre.',
-  telefono_invalido: 'Escribe un número de WhatsApp válido (solo dígitos, con lada).',
-  no_encontrada: 'No encontramos esa membresía.',
-}
+// Turns the short error codes raised by the database into plain Spanish or English.
+const KNOWN = [
+  'pendiente', 'vencida', 'sin_sellos', 'cancelada', 'sin_permiso', 'slug_en_uso',
+  'negocio_no_existe', 'nivel_no_existe', 'nombre_invalido', 'telefono_invalido', 'no_encontrada',
+]
 
 export function friendlyError(error) {
   if (!error) return ''
   const raw = (error.message || '').trim()
-  if (MESSAGES[raw]) return MESSAGES[raw]
+  if (KNOWN.includes(raw)) return tr(`e.${raw}`)
   // "Load failed" is how iPhones word a request that never reached the server.
   if (/Failed to fetch|Load failed|NetworkError|network/i.test(raw))
-    return 'No se pudo conectar. Revisa tu señal e inténtalo de nuevo; tus datos siguen aquí.'
-  return raw || 'Algo salió mal. Inténtalo de nuevo.'
+    return tr('e.network')
+  return raw || tr('e.generic')
 }

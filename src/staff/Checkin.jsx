@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { supabase, friendlyError } from '../supabase.js'
-import { fmtDate, money, STATUS_LABEL } from '../lib.js'
+import { fmtDate, money, statusLabel } from '../lib.js'
+import { useLang, tr } from '../i18n.js'
 import { Banner, StampGrid } from '../components.jsx'
 
 // The scanner library is large, so it loads only when "Escanear" is tapped.
@@ -17,14 +18,15 @@ function initials(name) {
 
 function ago(iso) {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
-  if (mins < 1) return 'ahora'
-  if (mins < 60) return `hace ${mins} min`
+  if (mins < 1) return tr('ago.now')
+  if (mins < 60) return tr('ago.min', { n: mins })
   const hrs = Math.round(mins / 60)
-  if (hrs < 24) return `hace ${hrs} h`
+  if (hrs < 24) return tr('ago.h', { n: hrs })
   return fmtDate(iso)
 }
 
 export default function Checkin({ business }) {
+  const { t } = useLang()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -55,7 +57,7 @@ export default function Checkin({ business }) {
       setResults(data)
       setSelected(null)
     }
-    if (data.length === 0) setNotice({ kind: 'warn', text: 'No encontramos a nadie con ese dato.' })
+    if (data.length === 0) setNotice({ kind: 'warn', text: t('ck.none') })
   }
 
   async function act(fn, args, okText) {
@@ -75,16 +77,16 @@ export default function Checkin({ business }) {
       { p_membership: selected.membership.id, p_client_id: crypto.randomUUID() },
       (d) =>
         d.membership.kind === 'unlimited'
-          ? '¡Sellado!'
-          : `¡Sellado! Quedan ${d.membership.credits_remaining} ${business.unit_label}.`
+          ? t('ck.stamped')
+          : t('ck.stampedLeft', { n: d.membership.credits_remaining, unit: business.unit_label })
     )
 
   const activate = () =>
-    act('activate_membership', { p_membership: selected.membership.id }, () => 'Pago confirmado. Membresía activa.')
+    act('activate_membership', { p_membership: selected.membership.id }, () => t('ck.paid'))
 
   if (scanning)
     return (
-      <Suspense fallback={<p className="muted screen-pad">Abriendo cámara…</p>}>
+      <Suspense fallback={<p className="muted screen-pad">{t('ck.opening')}</p>}>
         <Scanner
           onClose={() => setScanning(false)}
           onResult={(text) => {
@@ -101,12 +103,12 @@ export default function Checkin({ business }) {
     const status = ms?.status
     return (
       <div className="screen-pad">
-        <button className="back-link" onClick={() => { setSelected(null); setNotice(null) }}>← Volver</button>
+        <button className="back-link" onClick={() => { setSelected(null); setNotice(null) }}>{t('back')}</button>
         <div className="member-card">
           <span className="avatar lg">{initials(selected.name)}</span>
           <h2>{selected.name}</h2>
           <p className="muted">{ms?.tier_name}</p>
-          <div className={`status-pill ${status}`}>{STATUS_LABEL[status] || 'Sin membresía'}</div>
+          <div className={`status-pill ${status}`}>{statusLabel(status) || t('status.none')}</div>
         </div>
 
         <Banner kind={notice?.kind}>{notice?.text}</Banner>
@@ -114,27 +116,27 @@ export default function Checkin({ business }) {
         {status === 'active' && (
           <>
             <StampGrid membership={ms} />
-            <p className="muted center">Vence el {fmtDate(ms.expires_at)}</p>
+            <p className="muted center">{t('ck.expires', { date: fmtDate(ms.expires_at) })}</p>
             <button className="btn primary" onClick={stamp} disabled={busy}>
-              {busy ? 'Sellando…' : 'Registrar 1 sello'}
+              {busy ? t('ck.stamping') : t('ck.stampBtn')}
             </button>
           </>
         )}
 
         {status === 'pending' && (
           <>
-            <Banner kind="warn">Aún no ha pagado. Cobra {money(ms.price_mxn)} y confirma para activar.</Banner>
+            <Banner kind="warn">{t('ck.unpaid', { price: money(ms.price_mxn) })}</Banner>
             <button className="btn primary" onClick={activate} disabled={busy}>
-              Confirmar pago y activar
+              {t('ck.confirm')}
             </button>
           </>
         )}
 
         {status === 'expired' && (
           <>
-            <Banner kind="error">Venció el {fmtDate(ms.expires_at)}. No quedan sellos disponibles.</Banner>
+            <Banner kind="error">{t('ck.expiredBanner', { date: fmtDate(ms.expires_at) })}</Banner>
             <button className="btn primary" onClick={activate} disabled={busy}>
-              Cobrar {money(ms.price_mxn)} y renovar
+              {t('ck.renew', { price: money(ms.price_mxn) })}
             </button>
           </>
         )}
@@ -155,11 +157,11 @@ export default function Checkin({ business }) {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por nombre o teléfono…"
+          placeholder={t('ck.search')}
           inputMode="search"
         />
         <button type="button" className="btn scan" onClick={() => setScanning(true)}>
-          ▤ Escanear
+          {t('ck.scan')}
         </button>
       </form>
 
@@ -167,7 +169,7 @@ export default function Checkin({ business }) {
 
       {results ? (
         <>
-          <h2 className="section-label">Resultados</h2>
+          <h2 className="section-label">{t('ck.results')}</h2>
           <div className="stack">
             {results.map((m) => (
               <button key={m.member_id} className="person-row" onClick={() => setSelected(m)}>
@@ -175,7 +177,7 @@ export default function Checkin({ business }) {
                 <span className="grow">
                   <strong>{m.name}</strong>
                   <small>
-                    {m.phone} · {STATUS_LABEL[m.membership?.status] || 'Sin membresía'}
+                    {m.phone} · {statusLabel(m.membership?.status) || t('status.none')}
                   </small>
                 </span>
               </button>
@@ -184,9 +186,9 @@ export default function Checkin({ business }) {
         </>
       ) : (
         <>
-          <h2 className="section-label">Check-ins recientes</h2>
+          <h2 className="section-label">{t('ck.recent')}</h2>
           {recent.length === 0 ? (
-            <p className="muted">Aún no hay check-ins. Escanea el código de un cliente para empezar.</p>
+            <p className="muted">{t('ck.noRecent')}</p>
           ) : (
             <div className="stack">
               {recent.map((r, i) => (
@@ -196,7 +198,7 @@ export default function Checkin({ business }) {
                     <strong>{r.name}</strong>
                     <small>
                       {ago(r.at)}
-                      {r.credits_remaining != null ? ` · quedan ${r.credits_remaining}` : ''}
+                      {r.credits_remaining != null ? ` · ${t('ck.left', { n: r.credits_remaining })}` : ''}
                     </small>
                   </span>
                 </div>

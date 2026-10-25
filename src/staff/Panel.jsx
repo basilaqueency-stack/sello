@@ -3,10 +3,12 @@ import { QRCodeSVG } from 'qrcode.react'
 import { supabase, friendlyError } from '../supabase.js'
 import { money } from '../lib.js'
 import { Banner } from '../components.jsx'
+import { useLang } from '../i18n.js'
 
 const EMPTY = { id: null, name: '', price_mxn: '', kind: 'credits', credits_per_period: 10, period_days: 30 }
 
 function TierForm({ businessId, tier, onDone, onCancel }) {
+  const { t } = useLang()
   const [f, setF] = useState(tier)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -34,23 +36,23 @@ function TierForm({ businessId, tier, onDone, onCancel }) {
   return (
     <form onSubmit={submit} className="stack form card">
       <label>
-        Nombre
-        <input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="10 cafés al mes" required />
+        {t('tf.name')}
+        <input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder={t('tf.namePh')} required />
       </label>
       <label>
-        Precio (MXN)
+        {t('tf.price')}
         <input type="number" min="0" value={f.price_mxn} onChange={(e) => set('price_mxn', e.target.value)} required />
       </label>
       <label>
-        ¿Cuántos sellos incluye?
+        {t('tf.kind')}
         <select value={f.kind} onChange={(e) => set('kind', e.target.value)}>
-          <option value="credits">Un número limitado (ej. 10 al mes)</option>
-          <option value="unlimited">Sin límite (todos los que quiera)</option>
+          <option value="credits">{t('tf.limited')}</option>
+          <option value="unlimited">{t('tf.unlimited')}</option>
         </select>
       </label>
       {f.kind === 'credits' && (
         <label>
-          Sellos por periodo
+          {t('tf.perPeriod')}
           <input
             type="number"
             min="1"
@@ -61,30 +63,28 @@ function TierForm({ businessId, tier, onDone, onCancel }) {
         </label>
       )}
       <label>
-        Se renueva cada (días)
+        {t('tf.renew')}
         <input type="number" min="1" value={f.period_days} onChange={(e) => set('period_days', e.target.value)} required />
       </label>
       <Banner kind="info">
         {f.kind === 'unlimited'
-          ? `Tus clientes podrán sellar sin límite durante ${f.period_days || '…'} días.`
-          : `Tus clientes recibirán ${f.credits_per_period || '…'} sellos cada ${f.period_days || '…'} días.`}
+          ? t('tf.previewUnl', { days: f.period_days || '…' })
+          : t('tf.previewLim', { n: f.credits_per_period || '…', days: f.period_days || '…' })}
       </Banner>
       {f.kind === 'unlimited' && /\d/.test(f.name) && (
-        <Banner kind="warn">
-          El nombre menciona un número, pero esta membresía no tiene límite de sellos. ¿Querías elegir "Un número
-          limitado"?
-        </Banner>
+        <Banner kind="warn">{t('tf.warn')}</Banner>
       )}
       <Banner kind="error">{error}</Banner>
       <div className="row">
-        <button className="btn primary" disabled={busy}>Guardar</button>
-        <button type="button" className="btn ghost" onClick={onCancel}>Cancelar</button>
+        <button className="btn primary" disabled={busy}>{t('tf.save')}</button>
+        <button type="button" className="btn ghost" onClick={onCancel}>{t('tf.cancel')}</button>
       </div>
     </form>
   )
 }
 
 export default function Panel({ business, onSignOut }) {
+  const { t } = useLang()
   const [stats, setStats] = useState(null)
   const [tiers, setTiers] = useState([])
   const [editing, setEditing] = useState(null)
@@ -125,8 +125,8 @@ export default function Panel({ business, onSignOut }) {
   return (
     <div className="screen-pad">
       <div className="topline">
-        <h2 className="title small">Panel</h2>
-        <span className="mono small">🔒 Solo dueño</span>
+        <h2 className="title small">{t('pn.title')}</h2>
+        <span className="mono small">{t('pn.owner')}</span>
       </div>
       <Banner kind="error">{error}</Banner>
 
@@ -134,20 +134,20 @@ export default function Panel({ business, onSignOut }) {
         <div className="stat-grid">
           <div className="stat wide">
             <strong>{stats.active_members}</strong>
-            <span>miembros activos</span>
+            <span>{t('pn.active')}</span>
           </div>
           <div className="stat">
             <strong>{money(stats.monthly_mxn)}</strong>
-            <span>al mes</span>
+            <span>{t('pn.perMonth')}</span>
           </div>
           <div className="stat">
             <strong>{stats.expiring_week}</strong>
-            <span>vencen esta semana</span>
+            <span>{t('pn.expiring')}</span>
           </div>
         </div>
       )}
 
-      <h2 className="section-label">Membresías</h2>
+      <h2 className="section-label">{t('pn.tiers')}</h2>
       {editing ? (
         <TierForm
           businessId={business.id}
@@ -161,36 +161,36 @@ export default function Panel({ business, onSignOut }) {
       ) : (
         <>
           <div className="stack">
-            {tiers.length === 0 && <p className="muted">Crea tu primera membresía para que tus clientes puedan unirse.</p>}
-            {tiers.map((t) => (
-              <div key={t.id} className={`tier-row ${t.active ? '' : 'off'}`}>
+            {tiers.length === 0 && <p className="muted">{t('pn.noTiers')}</p>}
+            {tiers.map((tier) => (
+              <div key={tier.id} className={`tier-row ${tier.active ? '' : 'off'}`}>
                 <span className="grow">
-                  <strong>{t.name}</strong>
+                  <strong>{tier.name}</strong>
                   <small>
-                    {money(t.price_mxn)} · {t.kind === 'unlimited' ? 'ilimitado' : `${t.credits_per_period} sellos`} · {t.period_days} días
-                    {t.active ? '' : ' · oculta'}
+                    {money(tier.price_mxn)} · {tier.kind === 'unlimited' ? t('pn.unlimited') : t('pn.stamps', { n: tier.credits_per_period })} · {t('pn.days', { n: tier.period_days })}
+                    {tier.active ? '' : ` · ${t('pn.hidden')}`}
                   </small>
                 </span>
-                <button className="link-btn" onClick={() => setEditing(t)}>Editar</button>
-                <button className="link-btn" onClick={() => toggleActive(t)}>{t.active ? 'Ocultar' : 'Mostrar'}</button>
+                <button className="link-btn" onClick={() => setEditing(tier)}>{t('pn.edit')}</button>
+                <button className="link-btn" onClick={() => toggleActive(tier)}>{tier.active ? t('pn.hide') : t('pn.show')}</button>
               </div>
             ))}
           </div>
-          <button className="btn ghost" onClick={() => setEditing(EMPTY)}>+ Nueva membresía</button>
+          <button className="btn ghost" onClick={() => setEditing(EMPTY)}>{t('pn.new')}</button>
         </>
       )}
 
-      <h2 className="section-label">Código para tu mostrador</h2>
+      <h2 className="section-label">{t('pn.counter')}</h2>
       <div className="card center">
         <div className="qr-wrap">
           <QRCodeSVG value={joinUrl} size={160} fgColor="#12292B" />
         </div>
         <p className="mono small break">{joinUrl}</p>
-        <button className="btn ghost" onClick={copy}>{copied ? 'Copiado ✓' : 'Copiar enlace'}</button>
-        <p className="muted small">Imprime este código: tus clientes lo escanean para unirse.</p>
+        <button className="btn ghost" onClick={copy}>{copied ? t('pn.copied') : t('pn.copy')}</button>
+        <p className="muted small">{t('pn.print')}</p>
       </div>
 
-      <button className="link-btn" onClick={onSignOut}>Cerrar sesión</button>
+      <button className="link-btn" onClick={onSignOut}>{t('pn.signout')}</button>
     </div>
   )
 }

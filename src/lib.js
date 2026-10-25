@@ -1,13 +1,14 @@
 // Small shared helpers.
+import { tr, locale } from './i18n.js'
 
 export function fmtDate(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 }
 
 export function fmtDateTime(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleString('es-MX', {
+  return new Date(iso).toLocaleString(locale(), {
     day: 'numeric',
     month: 'short',
     hour: 'numeric',
@@ -16,14 +17,11 @@ export function fmtDateTime(iso) {
 }
 
 export function money(n) {
-  return `$${Number(n || 0).toLocaleString('es-MX')} MXN`
+  return `$${Number(n || 0).toLocaleString(locale())} MXN`
 }
 
-export const STATUS_LABEL = {
-  pending: 'Pendiente de pago',
-  active: 'Activa',
-  expired: 'Vencida',
-  cancelled: 'Cancelada',
+export function statusLabel(status) {
+  return status ? tr(`status.${status}`) : ''
 }
 
 // ----- WhatsApp numbers -----
@@ -31,10 +29,10 @@ export const STATUS_LABEL = {
 // so reminders can later be sent to the right place. The customer picks the country
 // and types the local number; we clean up common habits and show them what we saved.
 
-export const COUNTRIES = [
-  { id: 'mx', label: 'México +52' },
-  { id: 'us', label: 'EE. UU. / Canadá +1' },
-  { id: 'other', label: 'Otro país' },
+export const countries = () => [
+  { id: 'mx', label: tr('country.mx') },
+  { id: 'us', label: tr('country.us') },
+  { id: 'other', label: tr('country.other') },
 ]
 
 const MX_2_DIGIT_AREAS = ['55', '33', '81'] // Ciudad de México, Guadalajara, Monterrey
@@ -48,7 +46,7 @@ export function buildWhatsApp(country, otherCode, raw) {
     if (/^(044|045|521)\d{10}$/.test(n)) n = n.slice(3)
     else if (/^(52|01)\d{10}$/.test(n)) n = n.slice(2)
     if (!/^\d{10}$/.test(n))
-      return { ok: false, error: 'Escribe los 10 dígitos de tu número (lada + número). Ejemplo: 322 123 4567' }
+      return { ok: false, error: tr('ph.mx') }
     const cut = MX_2_DIGIT_AREAS.includes(n.slice(0, 2)) ? 2 : 3
     const rest = n.slice(cut)
     const display = `+52 ${n.slice(0, cut)} ${rest.slice(0, rest.length - 4)} ${rest.slice(-4)}`
@@ -57,15 +55,15 @@ export function buildWhatsApp(country, otherCode, raw) {
 
   if (country === 'us') {
     if (/^1\d{10}$/.test(n)) n = n.slice(1)
-    if (!/^\d{10}$/.test(n)) return { ok: false, error: 'Escribe los 10 dígitos de tu número, con código de área.' }
+    if (!/^\d{10}$/.test(n)) return { ok: false, error: tr('ph.us') }
     return { ok: true, digits: `1${n}`, display: `+1 ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}` }
   }
 
   const code = (otherCode || '').replace(/\D/g, '').replace(/^0+/, '')
-  if (!code) return { ok: false, error: 'Escribe el código de tu país (por ejemplo 44 para Reino Unido).' }
+  if (!code) return { ok: false, error: tr('ph.code') }
   n = n.replace(/^0+/, '')
   const all = `${code}${n}`
-  if (all.length < 8 || all.length > 15) return { ok: false, error: 'Revisa el código de país y el número.' }
+  if (all.length < 8 || all.length > 15) return { ok: false, error: tr('ph.check') }
   return { ok: true, digits: all, display: `+${code} ${n}` }
 }
 

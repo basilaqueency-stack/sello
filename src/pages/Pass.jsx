@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { supabase, friendlyError } from '../supabase.js'
-import { fmtDate, fmtDateTime, money, STATUS_LABEL, savePass } from '../lib.js'
+import { fmtDate, fmtDateTime, money, statusLabel, savePass } from '../lib.js'
+import { useLang } from '../i18n.js'
 import { Banner, StampGrid } from '../components.jsx'
 
 const cacheKey = (token) => `sello_pass_${token}`
@@ -16,6 +17,7 @@ function readCache(token) {
 }
 
 export default function Pass() {
+  const { t } = useLang()
   const { token } = useParams()
   const [pass, setPass] = useState(() => readCache(token))
   const [offline, setOffline] = useState(false)
@@ -50,13 +52,13 @@ export default function Pass() {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [load])
 
-  if (loading) return <main className="page"><p className="muted">Cargando tu pase…</p></main>
+  if (loading) return <main className="page"><p className="muted">{t('loading.pass')}</p></main>
   if (notFound || !pass)
     return (
       <main className="page">
-        <h1 className="title">No encontramos este pase</h1>
-        <Banner kind="error">{error || 'Revisa que el enlace esté completo.'}</Banner>
-        <Link to="/" className="btn ghost">Ir al inicio</Link>
+        <h1 className="title">{t('pass.notFound')}</h1>
+        <Banner kind="error">{error || t('pass.notFoundHelp')}</Banner>
+        <Link to="/" className="btn ghost">{t('pass.home')}</Link>
       </main>
     )
 
@@ -66,8 +68,8 @@ export default function Pass() {
 
   return (
     <main className="page">
-      <Link to="/" className="back-link">← Mis membresías</Link>
-      {offline && <Banner kind="warn">Sin conexión. Mostrando tu último pase guardado.</Banner>}
+      <Link to="/" className="back-link">{t('pass.back')}</Link>
+      {offline && <Banner kind="warn">{t('pass.offline')}</Banner>}
 
       <div className="wallet-card">
         <div className="wallet-head">
@@ -80,29 +82,29 @@ export default function Pass() {
         <div className="wallet-name">{pass.name}</div>
       </div>
 
-      <div className={`status-pill ${status}`}>{STATUS_LABEL[status] || ''}</div>
+      <div className={`status-pill ${status}`}>{statusLabel(status)}</div>
 
       {status === 'pending' && (
         <Banner kind="info">
-          Muestra este código en el mostrador y paga {money(ms.price_mxn)} para activar tu membresía.
+          {t('pass.pending', { price: money(ms.price_mxn) })}
         </Banner>
       )}
       {status === 'expired' && (
         <Banner kind="error">
-          Tu membresía venció el {fmtDate(ms.expires_at)}. Renueva en el mostrador antes de tu próxima visita.
+          {t('pass.expired', { date: fmtDate(ms.expires_at) })}
         </Banner>
       )}
 
       {isActive && <StampGrid membership={ms} dark />}
-      {isActive && <p className="muted center">Renueva el {fmtDate(ms.expires_at)}</p>}
+      {isActive && <p className="muted center">{t('pass.renews', { date: fmtDate(ms.expires_at) })}</p>}
 
       {pass.history?.length > 0 && (
         <>
-          <h2 className="section-label">Historial</h2>
+          <h2 className="section-label">{t('pass.history')}</h2>
           <ul className="history">
             {pass.history.map((at, i) => (
               <li key={i}>
-                <span>Sello registrado</span>
+                <span>{t('pass.stamped')}</span>
                 <small>{fmtDateTime(at)}</small>
               </li>
             ))}
@@ -111,7 +113,7 @@ export default function Pass() {
       )}
 
       <p className="muted small center">
-        Tip: en el menú de tu navegador elige "Agregar a pantalla de inicio" para abrir tu pase más rápido.
+        {t('pass.tip')}
       </p>
     </main>
   )

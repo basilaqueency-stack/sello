@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase, friendlyError } from '../supabase.js'
 import { Banner } from '../components.jsx'
+import { useLang, tr as tr0 } from '../i18n.js'
 import Checkin from './Checkin.jsx'
 import Panel from './Panel.jsx'
 
 function AuthForm() {
+  const { t } = useLang()
   const [mode, setMode] = useState('in') // 'in' or 'up'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,20 +27,20 @@ function AuthForm() {
     setBusy(false)
     if (error) return setError(friendlyError(error))
     // With "Confirm email" turned on in Supabase, sign-up needs a click in the inbox first.
-    if (mode === 'up' && !data.session) setNotice('Revisa tu correo y confirma tu cuenta para entrar.')
+    if (mode === 'up' && !data.session) setNotice(t('auth.confirm'))
   }
 
   return (
     <main className="page">
       <h1 className="wordmark">Sello</h1>
-      <p className="muted">Acceso para negocios</p>
+      <p className="muted">{t('auth.title')}</p>
       <form onSubmit={submit} className="stack form">
         <label>
-          Correo
+          {t('auth.email')}
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
         </label>
         <label>
-          Contraseña
+          {t('auth.password')}
           <input
             type="password"
             value={password}
@@ -51,13 +53,13 @@ function AuthForm() {
         <Banner kind="error">{error}</Banner>
         <Banner kind="info">{notice}</Banner>
         <button className="btn primary" disabled={busy}>
-          {mode === 'in' ? 'Entrar' : 'Crear cuenta'}
+          {mode === 'in' ? t('auth.in') : t('auth.up')}
         </button>
         <button type="button" className="link-btn" onClick={() => setMode(mode === 'in' ? 'up' : 'in')}>
-          {mode === 'in' ? 'Crear una cuenta nueva' : 'Ya tengo cuenta'}
+          {mode === 'in' ? t('auth.toUp') : t('auth.toIn')}
         </button>
       </form>
-      <Link to="/" className="back-link">← Volver</Link>
+      <Link to="/" className="back-link">{t('back')}</Link>
     </main>
   )
 }
@@ -73,10 +75,11 @@ function slugify(text) {
 }
 
 function CreateBusiness({ onDone }) {
+  const { t } = useLang()
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
-  const [unit, setUnit] = useState('cafés')
+  const [unit, setUnit] = useState(() => tr0('cb.unitDefault'))
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -92,11 +95,11 @@ function CreateBusiness({ onDone }) {
 
   return (
     <main className="page">
-      <h1 className="title">Crea tu negocio</h1>
-      <p className="muted">Solo tardas un minuto. Después podrás agregar tus membresías.</p>
+      <h1 className="title">{t('cb.title')}</h1>
+      <p className="muted">{t('cb.sub')}</p>
       <form onSubmit={submit} className="stack form">
         <label>
-          Nombre del negocio
+          {t('cb.name')}
           <input
             value={name}
             onChange={(e) => {
@@ -108,7 +111,7 @@ function CreateBusiness({ onDone }) {
           />
         </label>
         <label>
-          Enlace corto (sello.app/join/…)
+          {t('cb.slug')}
           <input
             value={slug}
             onChange={(e) => {
@@ -120,12 +123,12 @@ function CreateBusiness({ onDone }) {
           />
         </label>
         <label>
-          ¿Qué sellas? (en plural)
-          <input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="cafés, cortes, sesiones" required />
+          {t('cb.unit')}
+          <input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder={t('cb.unitPh')} required />
         </label>
         <Banner kind="error">{error}</Banner>
         <button className="btn primary" disabled={busy}>
-          {busy ? 'Creando…' : 'Crear negocio'}
+          {busy ? t('cb.busy') : t('cb.submit')}
         </button>
       </form>
     </main>
@@ -133,6 +136,7 @@ function CreateBusiness({ onDone }) {
 }
 
 export default function Staff() {
+  const { t } = useLang()
   const [session, setSession] = useState(undefined) // undefined = still checking
   const [business, setBusiness] = useState(undefined)
   const [role, setRole] = useState(null)
@@ -162,10 +166,10 @@ export default function Staff() {
     else setBusiness(undefined)
   }, [session, loadBusiness])
 
-  if (session === undefined) return <main className="page"><p className="muted">Cargando…</p></main>
+  if (session === undefined) return <main className="page"><p className="muted">{t('loading')}</p></main>
   if (!session) return <AuthForm />
   if (error) return <main className="page"><Banner kind="error">{error}</Banner></main>
-  if (business === undefined) return <main className="page"><p className="muted">Cargando…</p></main>
+  if (business === undefined) return <main className="page"><p className="muted">{t('loading')}</p></main>
   if (business === null) return <CreateBusiness onDone={loadBusiness} />
 
   const isOwner = role === 'owner'
@@ -182,12 +186,12 @@ export default function Staff() {
       <nav className="app-footer">
         <button className={`foot-tab ${tab === 'inicio' ? 'active' : ''}`} onClick={() => setTab('inicio')}>
           <span className="foot-icon">⌂</span>
-          <span>Inicio</span>
+          <span>{t('nav.home')}</span>
         </button>
         {isOwner && (
           <button className={`foot-tab ${tab === 'panel' ? 'active' : ''}`} onClick={() => setTab('panel')}>
             <span className="foot-icon">▦</span>
-            <span>Panel</span>
+            <span>{t('nav.panel')}</span>
           </button>
         )}
       </nav>
