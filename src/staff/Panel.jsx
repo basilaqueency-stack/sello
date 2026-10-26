@@ -83,8 +83,38 @@ function TierForm({ businessId, tier, onDone, onCancel }) {
   )
 }
 
-function Team({ businessId }) {
+// The message an owner sends to a new employee (Sello doesn't send emails yet; WhatsApp is how people reach each other here).
+function ShareInvite({ biz, email }) {
   const { t } = useLang()
+  const [copied, setCopied] = useState(false)
+  const text = t('tm.shareText', { biz, url: `${window.location.origin}/staff`, email })
+  return (
+    <span className="row" style={{ gap: 4 }}>
+      <a className="link-btn" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer">
+        {t('tm.whatsapp')}
+      </a>
+      <button
+        type="button"
+        className="link-btn"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(text)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+          } catch {
+            /* clipboard blocked: the WhatsApp button still works */
+          }
+        }}
+      >
+        {copied ? t('tm.copiedMsg') : t('tm.copyMsg')}
+      </button>
+    </span>
+  )
+}
+
+function Team({ businessId, businessName }) {
+  const { t } = useLang()
+  const [sent, setSent] = useState(null)
   const [data, setData] = useState(null)
   const [email, setEmail] = useState('')
   const [notice, setNotice] = useState(null)
@@ -107,6 +137,7 @@ function Team({ businessId }) {
     setBusy(false)
     if (error) return setNotice({ kind: 'error', text: friendlyError(error) })
     setNotice({ kind: 'ok', text: r?.added ? t('tm.added', { email }) : t('tm.sent', { email }) })
+    setSent(r?.added ? null : email.trim().toLowerCase())
     setEmail('')
     load()
   }
@@ -143,6 +174,7 @@ function Team({ businessId }) {
             <span className="grow">
               <strong className="break">{addr}</strong>
               <small>{t('tm.pending')}</small>
+              <ShareInvite biz={businessName} email={addr} />
             </span>
             <button className="link-btn" onClick={() => cancel(addr)}>{t('tm.cancelInvite')}</button>
           </div>
@@ -161,6 +193,7 @@ function Team({ businessId }) {
           <button className="btn scan" disabled={busy}>{t('tm.invite')}</button>
         </div>
         <Banner kind={notice?.kind}>{notice?.text}</Banner>
+        {sent && <ShareInvite biz={businessName} email={sent} />}
       </form>
     </>
   )
@@ -503,7 +536,7 @@ export default function Panel({ business, onSignOut, onChanged }) {
       <h2 className="section-label">{t('dr.title')}</h2>
       <DirectoryProfile business={business} onChanged={onChanged} />
 
-      <Team businessId={business.id} />
+      <Team businessId={business.id} businessName={business.name} />
 
       <h2 className="section-label">{t('pn.counter')}</h2>
       <div className="card center">
