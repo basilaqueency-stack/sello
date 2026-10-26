@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { supabase, friendlyError } from '../supabase.js'
 import { fmtDate, fmtDateTime, money, statusLabel, savePass } from '../lib.js'
 import { useLang } from '../i18n.js'
+import Onboarding, { seenOnboarding } from '../Onboarding.jsx'
 import { Banner, StampGrid } from '../components.jsx'
 
 // "Add to Wallet" buttons appear only once the wallet accounts are set up on the server.
@@ -95,6 +96,7 @@ export default function Pass() {
   const [loading, setLoading] = useState(!readCache(token))
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
+  const [tour, setTour] = useState(false)
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_pass', { p_token: token })
@@ -122,6 +124,11 @@ export default function Pass() {
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [load])
+
+  // First visit on this phone: show the 2-card welcome once the pass is on screen.
+  useEffect(() => {
+    if (pass && !seenOnboarding('customer')) setTour(true)
+  }, [!!pass]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return <main className="page"><p className="muted">{t('loading.pass')}</p></main>
   if (notFound || !pass)
@@ -189,6 +196,18 @@ export default function Pass() {
       <p className="muted small center">
         {t('pass.tip')}
       </p>
+      <p className="center">
+        <button className="link-btn" onClick={() => setTour(true)}>{t('ob.help')}</button>
+      </p>
+      <Onboarding
+        id="customer"
+        open={tour}
+        onClose={() => setTour(false)}
+        steps={[
+          { icon: '▤', title: t('oc1.title'), body: t('oc1.body') },
+          { icon: '✓', title: t('oc2.title'), body: t('oc2.body') },
+        ]}
+      />
     </main>
   )
 }

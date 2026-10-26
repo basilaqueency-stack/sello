@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase, friendlyError } from '../supabase.js'
 import { Banner } from '../components.jsx'
 import { useLang, tr as tr0 } from '../i18n.js'
+import Onboarding, { seenOnboarding } from '../Onboarding.jsx'
 import {
   clearAllStaffData, getQueue, hasStoredLogin, isNetworkError, loadStaffCache, saveStaffCache, withTimeout,
 } from '../offline.js'
@@ -162,6 +163,7 @@ export default function Staff() {
   const [role, setRole] = useState(null)
   const [tab, setTab] = useState('inicio')
   const [error, setError] = useState('')
+  const [tour, setTour] = useState(false)
 
   // With no signal the login can't be refreshed. If this phone already holds a login and a saved
   // copy of the business, keep the counter open in "offline mode" instead of kicking the staff out.
@@ -246,6 +248,10 @@ export default function Staff() {
     else setBusiness(undefined)
   }, [session, loadBusiness])
 
+  useEffect(() => {
+    if (business && !seenOnboarding('staff')) setTour(true)
+  }, [!!business]) // eslint-disable-line react-hooks/exhaustive-deps
+
   async function signOut() {
     const n = getQueue().length
     if (n && !window.confirm(t('of.signoutWarn', { n }))) return
@@ -285,6 +291,7 @@ export default function Staff() {
             <Checkin business={business} />
             {!isOwner && (
               <div className="center">
+                <button className="link-btn" onClick={() => setTour(true)}>{t('ob.help')}</button>
                 <button className="link-btn" onClick={signOut}>{t('pn.signout')}</button>
               </div>
             )}
@@ -292,6 +299,15 @@ export default function Staff() {
         )}
         {tab === 'panel' && isOwner && <Panel business={business} onSignOut={signOut} onChanged={loadBusiness} />}
       </div>
+      <Onboarding
+        id="staff"
+        open={tour}
+        onClose={() => setTour(false)}
+        steps={[
+          { icon: '▤', title: t('os1.title'), body: t('os1.body') },
+          { icon: '✓', title: t('os2.title'), body: t('os2.body') + (isOwner ? ` ${t('os2.owner')}` : '') },
+        ]}
+      />
       <nav className="app-footer">
         <button className={`foot-tab ${tab === 'inicio' ? 'active' : ''}`} onClick={() => setTab('inicio')}>
           <span className="foot-icon">⌂</span>

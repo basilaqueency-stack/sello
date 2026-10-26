@@ -259,3 +259,15 @@ body::before { /* paper grain over everything, barely there */
 .lang-bar button.on { box-shadow: var(--shadow-sm); }
 
 .stamp-card.on-dark { background-color: var(--card-deep); }
+
+/* ----- welcome pop-ups ----- */
+.modal-back { position: fixed; inset: 0; z-index: 60; background: rgba(18, 41, 43, 0.45); display: flex; align-items: center; justify-content: center; padding: 20px; animation: fade 0.18s ease-out; }
+.modal { width: 100%; max-width: 360px; text-align: center; background: #fff; border: 1px solid var(--box-border); border-radius: 20px; padding: 26px 22px 18px; box-shadow: var(--shadow-lg); background-image: var(--sheen), linear-gradient(var(--card), var(--card)); display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.modal p { margin: 0; color: var(--text); }
+.modal .title { margin: 0; font-size: 22px; }
+.modal-icon { width: 56px; height: 56px; margin: 0 auto 4px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 26px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); }
+.dots { display: flex; gap: 6px; justify-content: center; margin: 4px 0 6px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); }
+.dots i.on { background: var(--accent); }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .modal-back { animation: none; } }
