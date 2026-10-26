@@ -39,7 +39,7 @@ export default function Join() {
     setBusy(true)
     const { data, error } = await supabase.rpc('join_business', {
       p_slug: slug,
-      p_tier_id: tier.id,
+      p_tier_id: tier.pointsOnly ? null : tier.id,
       p_name: name,
       p_phone: wa.digits,
     })
@@ -67,14 +67,14 @@ export default function Join() {
       <h1 className="title">{tr('join.pick')}</h1>
 
       {biz.description && <p className="muted">{biz.description}</p>}
-      {biz.tiers.length === 0 && <p className="muted">{tr('join.noTiers')}</p>}
+      {biz.tiers.length === 0 && !biz.points_enabled && <p className="muted">{tr('join.noTiers')}</p>}
 
       <div className="stack">
         {biz.tiers.map((t) => (
           <button
             key={t.id}
             type="button"
-            className={`tier-card ${tier?.id === t.id ? 'selected' : ''}`}
+            className={`tier-card ${tier?.id === t.id && !tier?.pointsOnly ? 'selected' : ''}`}
             onClick={() => setTier(t)}
           >
             <strong>{t.name}</strong>
@@ -83,6 +83,23 @@ export default function Join() {
           </button>
         ))}
       </div>
+
+      {biz.points_enabled && (
+        <div className="stack" style={{ marginTop: 10 }}>
+          <button
+            type="button"
+            className={`tier-card ${tier?.pointsOnly ? 'selected' : ''}`}
+            onClick={() => setTier({ id: null, pointsOnly: true })}
+          >
+            <strong>{tr('join.pointsOnly')}</strong>
+            <small>
+              {biz.points_mode === 'spend'
+                ? tr('join.pointsOnlySpend', { n: biz.points_per_100 })
+                : tr('join.pointsOnlyVisit', { n: biz.points_per_visit })}
+            </small>
+          </button>
+        </div>
+      )}
 
       {tier && (
         <form onSubmit={submit} className="stack form">
@@ -129,7 +146,7 @@ export default function Join() {
             {busy ? tr('join.busy') : tr('join.submit')}
           </button>
           <p className="muted small">
-            {tr('join.payNote')}
+            {tier.pointsOnly ? tr('join.pointsNote') : tr('join.payNote')}
           </p>
         </form>
       )}

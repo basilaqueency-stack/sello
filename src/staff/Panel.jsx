@@ -220,11 +220,11 @@ function VoidRequests({ businessId }) {
   if (list.length === 0 && !error) return null
   return (
     <>
-      <h2 className="section-label">{t('vr.panelTitle')}</h2>
+      <h2 className="alert-title">{t('vr.attention')} · {t('vr.panelTitle')}</h2>
       <Banner kind="error">{error}</Banner>
       <div className="stack">
         {list.map((r) => (
-          <div key={r.id} className="card stack">
+          <div key={r.id} className="alert-card stack">
             <strong>{r.member}</strong>
             <small className="muted">
               {t('vr.stampOf', { when: fmtDateTime(r.stamp_at) })} · {t('vr.by', { who: r.by || '—' })}

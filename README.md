@@ -70,3 +70,7 @@ A wallet pass is a snapshot taken when it is added (name, plan, points then). Th
 ## Removing a stamp added by mistake
 
 Staff open the customer, tap **Ask to remove** next to the stamp, and add an optional reason. The owner sees a dot on the Dashboard tab and approves or rejects under **Stamp removal requests**. When the owner removes a stamp themselves it happens right away. The customer gets the stamp back and it disappears from their history; the original is kept (marked as removed) for the record. Run `supabase/updates/2026-10-26-void-stamps.sql` once.
+
+## Points-only accounts
+
+If a business has points turned on, customers can join with **Just points (no membership)**. Staff can later sell them a membership from their profile (**Add a membership**). Run `supabase/updates/2026-10-26-loyalty-only.sql` once. Businesses with points but no memberships also appear in the directory.

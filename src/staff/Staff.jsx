@@ -308,6 +308,12 @@ export default function Staff() {
       <div className="shell-body">
         {tab === 'inicio' && (
           <>
+            {isOwner && waiting > 0 && (
+              <button className="alert" onClick={() => setTab('panel')}>
+                <span>{waiting === 1 ? t('al.one') : t('al.many', { n: waiting })}</span>
+                <b>{t('al.review')} ▸</b>
+              </button>
+            )}
             <Checkin business={business} isOwner={isOwner} />
             {!isOwner && (
               <div className="center">

@@ -160,7 +160,8 @@ export default function Pass() {
         <div className="wallet-name">{pass.name}</div>
       </div>
 
-      <div className={`status-pill ${status}`}>{statusLabel(status)}</div>
+      {status && <div className={`status-pill ${status}`}>{statusLabel(status)}</div>}
+      {!ms && <Banner kind="info">{t('pass.pointsOnly')}</Banner>}
       <WalletButtons token={token} />
 
       {status === 'pending' && (

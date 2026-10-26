@@ -49,6 +49,17 @@ export default function Checkin({ business, isOwner }) {
   const [amount, setAmount] = useState('')
   const [rewards, setRewards] = useState([])
   const [stamps, setStamps] = useState([])
+  const [tiers, setTiers] = useState([])
+
+  useEffect(() => {
+    supabase
+      .from('tiers')
+      .select('*')
+      .eq('business_id', business.id)
+      .eq('active', true)
+      .order('price_mxn')
+      .then(({ data }) => setTiers(data || []))
+  }, [business.id])
 
   // The customer's latest stamps, so a stamp made by mistake can be removed.
   const loadStamps = useCallback(async (memberId) => {
@@ -183,6 +194,17 @@ export default function Checkin({ business, isOwner }) {
         : t('ck.stampedLeft', { n: data.membership.credits_remaining, unit: business.unit_label })
     )
     loadRecent()
+  }
+
+  async function addMembership(tier) {
+    setNotice(null)
+    setBusy(true)
+    const { data, error } = await withTimeout(supabase.rpc('add_membership', { p_member: selected.member_id, p_tier: tier.id }))
+    setBusy(false)
+    if (error) return setNotice({ kind: 'error', text: isNetworkError(error) ? t('of.needSignal') : friendlyError(error) })
+    setSelected(data)
+    setNotice({ kind: 'ok', text: t('ck.membershipAdded', { price: money(tier.price_mxn) }) })
+    refreshRoster(business.id)
   }
 
   // Staff ask the owner to remove a stamp; when the owner does it, it happens right away.
@@ -341,6 +363,22 @@ export default function Checkin({ business, isOwner }) {
             <button className="btn primary" onClick={activate} disabled={busy}>
               {t('ck.renew', { price: money(ms.price_mxn) })}
             </button>
+          </>
+        )}
+
+        {(!ms || status === 'cancelled') && tiers.length > 0 && (
+          <>
+            <h2 className="section-label">{t('ck.addMembership')}</h2>
+            <div className="stack">
+              {tiers.map((tr) => (
+                <button key={tr.id} className="person-row" disabled={busy} onClick={() => addMembership(tr)}>
+                  <span className="grow">
+                    <strong>{tr.name}</strong>
+                    <small>{money(tr.price_mxn)} / {t('pn.days', { n: tr.period_days })}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
           </>
         )}
 
