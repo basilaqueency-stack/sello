@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { supabase, friendlyError } from '../supabase.js'
-import { money } from '../lib.js'
+import { fmtDateTime, money } from '../lib.js'
 import { Banner } from '../components.jsx'
 import { useLang } from '../i18n.js'
 
@@ -195,6 +195,48 @@ function Team({ businessId, businessName }) {
         <Banner kind={notice?.kind}>{notice?.text}</Banner>
         {sent && <ShareInvite biz={businessName} email={sent} />}
       </form>
+    </>
+  )
+}
+
+// Owner: stamp-removal requests from staff, waiting for a yes or no.
+function VoidRequests({ businessId }) {
+  const { t } = useLang()
+  const [list, setList] = useState([])
+  const [error, setError] = useState('')
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.rpc('list_void_requests', { p_business: businessId })
+    if (!error) setList(data || [])
+  }, [businessId])
+  useEffect(() => {
+    load()
+  }, [load])
+  async function decide(id, approve) {
+    setError('')
+    const { error } = await supabase.rpc('decide_void', { p_request: id, p_approve: approve })
+    if (error) setError(friendlyError(error))
+    load()
+  }
+  if (list.length === 0 && !error) return null
+  return (
+    <>
+      <h2 className="section-label">{t('vr.panelTitle')}</h2>
+      <Banner kind="error">{error}</Banner>
+      <div className="stack">
+        {list.map((r) => (
+          <div key={r.id} className="card stack">
+            <strong>{r.member}</strong>
+            <small className="muted">
+              {t('vr.stampOf', { when: fmtDateTime(r.stamp_at) })} · {t('vr.by', { who: r.by || '—' })}
+            </small>
+            {r.reason && <p className="small" style={{ margin: 0 }}>“{r.reason}”</p>}
+            <div className="row">
+              <button className="btn primary" onClick={() => decide(r.id, true)}>{t('vr.approve')}</button>
+              <button className="btn ghost" onClick={() => decide(r.id, false)}>{t('vr.reject')}</button>
+            </div>
+          </div>
+        ))}
+      </div>
     </>
   )
 }
@@ -473,6 +515,8 @@ export default function Panel({ business, onSignOut, onChanged }) {
         <span className="mono small">{t('pn.owner')}</span>
       </div>
       <Banner kind="error">{error}</Banner>
+
+      <VoidRequests businessId={business.id} />
 
       {stats && (
         <div className="stat-grid">

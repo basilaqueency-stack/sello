@@ -258,6 +258,20 @@ export default function Staff() {
     if (business && !seenOnboarding('staff')) setTour(true)
   }, [!!business]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Owner: how many stamp-removal requests are waiting (shown as a dot on the Dashboard tab).
+  const [waiting, setWaiting] = useState(0)
+  useEffect(() => {
+    if (role !== 'owner' || !business || offlineMode) return
+    const check = () =>
+      withTimeout(supabase.rpc('list_void_requests', { p_business: business.id })).then(
+        ({ data }) => Array.isArray(data) && setWaiting(data.length),
+        () => {}
+      )
+    check()
+    const id = setInterval(check, 60000)
+    return () => clearInterval(id)
+  }, [role, business, offlineMode, tab])
+
   async function signOut() {
     const n = getQueue().length
     if (n && !window.confirm(t('of.signoutWarn', { n }))) return
@@ -294,7 +308,7 @@ export default function Staff() {
       <div className="shell-body">
         {tab === 'inicio' && (
           <>
-            <Checkin business={business} />
+            <Checkin business={business} isOwner={isOwner} />
             {!isOwner && (
               <div className="center">
                 <button className="link-btn" onClick={() => setTour(true)}>{t('ob.help')}</button>
@@ -321,7 +335,7 @@ export default function Staff() {
         </button>
         {isOwner && (
           <button className={`foot-tab ${tab === 'panel' ? 'active' : ''}`} onClick={() => setTab('panel')}>
-            <span className="foot-icon">▦</span>
+            <span className="foot-icon">▦{waiting > 0 && <i className="badge">{waiting}</i>}</span>
             <span>{t('nav.panel')}</span>
           </button>
         )}

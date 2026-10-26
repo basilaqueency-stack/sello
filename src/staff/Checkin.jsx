@@ -34,7 +34,7 @@ function spendPreview(business, amount, t) {
   return <p className="muted small">{t('ck.earnPreview', { n })}</p>
 }
 
-export default function Checkin({ business }) {
+export default function Checkin({ business, isOwner }) {
   const { t } = useLang()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
@@ -48,6 +48,17 @@ export default function Checkin({ business }) {
   const [failed, setFailed] = useState(() => getFailed())
   const [amount, setAmount] = useState('')
   const [rewards, setRewards] = useState([])
+  const [stamps, setStamps] = useState([])
+
+  // The customer's latest stamps, so a stamp made by mistake can be removed.
+  const loadStamps = useCallback(async (memberId) => {
+    const { data, error } = await withTimeout(supabase.rpc('member_stamps', { p_member: memberId }))
+    setStamps(!error && Array.isArray(data) ? data : [])
+  }, [])
+  useEffect(() => {
+    setStamps([])
+    if (selected?.member_id) loadStamps(selected.member_id)
+  }, [selected?.member_id, loadStamps])
 
   useEffect(() => {
     if (!business.points_enabled) return
@@ -172,6 +183,31 @@ export default function Checkin({ business }) {
         : t('ck.stampedLeft', { n: data.membership.credits_remaining, unit: business.unit_label })
     )
     loadRecent()
+  }
+
+  // Staff ask the owner to remove a stamp; when the owner does it, it happens right away.
+  async function removeStamp(st) {
+    let reason = null
+    if (isOwner) {
+      if (!window.confirm(t('vr.confirmOwner'))) return
+    } else {
+      reason = window.prompt(t('vr.reasonPrompt'), '')
+      if (reason === null) return // cancelled
+    }
+    setNotice(null)
+    setBusy(true)
+    const { data, error } = await withTimeout(supabase.rpc('request_stamp_void', { p_redemption: st.id, p_reason: reason }))
+    setBusy(false)
+    if (error) return setNotice({ kind: 'error', text: isNetworkError(error) ? t('of.needSignal') : friendlyError(error) })
+    if (data?.applied) {
+      setSelected(data.member)
+      loadRecent()
+      refreshRoster(business.id)
+      setNotice({ kind: 'ok', text: t('vr.removed') })
+    } else {
+      setNotice({ kind: 'ok', text: t('vr.requested') })
+    }
+    loadStamps(selected.member_id)
   }
 
   // Visit points are added automatically with each stamp; this adds points for a bill, or for a visit with no stamp.
@@ -305,6 +341,27 @@ export default function Checkin({ business }) {
             <button className="btn primary" onClick={activate} disabled={busy}>
               {t('ck.renew', { price: money(ms.price_mxn) })}
             </button>
+          </>
+        )}
+
+        {stamps.length > 0 && (
+          <>
+            <h2 className="section-label">{t('vr.title')}</h2>
+            <div className="stack">
+              {stamps.map((st) => (
+                <div key={st.id} className="person-row static">
+                  <span className="grow">
+                    <strong>{fmtDateTime(st.at)}</strong>
+                    {st.pending && <small>{t('vr.pending')}</small>}
+                  </span>
+                  {!st.pending && (
+                    <button className="btn scan" disabled={busy} onClick={() => removeStamp(st)}>
+                      {isOwner ? t('vr.remove') : t('vr.ask')}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </>
         )}
 

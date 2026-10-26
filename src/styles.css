@@ -275,3 +275,6 @@ body::before { /* paper grain over everything, barely there */
 .pw-wrap { position: relative; display: block; }
 .pw-wrap input { padding-right: 78px; }
 .pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 6px 8px; cursor: pointer; font-family: 'Inter Variable', system-ui, sans-serif; font-size: 13px; font-weight: 600; color: var(--accent); }
+
+.foot-icon { position: relative; }
+.badge { position: absolute; top: -4px; right: -12px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--accent); color: #fff; font-style: normal; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; }

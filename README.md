@@ -66,3 +66,7 @@ Google Wallet (free): `GOOGLE_WALLET_ISSUER_ID`, `GOOGLE_WALLET_SERVICE_ACCOUNT_
 Apple Wallet (needs the Apple Developer account, USD 99/yr): `APPLE_PASS_TYPE_ID`, `APPLE_TEAM_ID`, `APPLE_SIGNER_CERT`, `APPLE_SIGNER_KEY` (both base64 of the PEM files), `APPLE_WWDR_CERT` (base64 of Apple's WWDR certificate), optional `APPLE_SIGNER_KEY_PASSPHRASE`.
 
 A wallet pass is a snapshot taken when it is added (name, plan, points then). The QR code always works because it only holds the private pass link; live updating of the points shown inside the wallet is a later step.
+
+## Removing a stamp added by mistake
+
+Staff open the customer, tap **Ask to remove** next to the stamp, and add an optional reason. The owner sees a dot on the Dashboard tab and approves or rejects under **Stamp removal requests**. When the owner removes a stamp themselves it happens right away. The customer gets the stamp back and it disappears from their history; the original is kept (marked as removed) for the record. Run `supabase/updates/2026-10-26-void-stamps.sql` once.
