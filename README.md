@@ -53,7 +53,7 @@ the business directory, staff-invite flow, and offline stamping for the staff ap
 
 Run `supabase/updates/2026-10-26-points-directory.sql` once (fresh installs get it from `schema.sql`).
 
-- Owners turn points on in **Dashboard > Points & rewards**: either fixed points per visit (added automatically with each stamp) or points per amount spent (staff types the bill).
+- Owners turn points on in **Dashboard > Points & rewards**: either fixed points per visit or points per amount spent (staff types the bill). Points are only for customers WITHOUT an active membership; stamps never give points. Run `supabase/updates/2026-10-26-points-rules.sql` after the points update.
 - Rewards are a menu (name + points cost). Staff taps **Redeem** on the customer's screen; balances can never go below zero.
 - **Explore** (`/explore`) is the public directory. Businesses are listed by default and can switch it off in the Dashboard. Only businesses with at least one visible membership appear.
 

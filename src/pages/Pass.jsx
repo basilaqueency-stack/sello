@@ -177,7 +177,9 @@ export default function Pass() {
       {isActive && <StampGrid membership={ms} dark />}
       {isActive && <p className="muted center">{t('pass.renews', { date: fmtDate(ms.expires_at) })}</p>}
 
-      {pass.business.points_enabled && <Points pass={pass} />}
+      {pass.business.points_enabled && (status !== 'active' || pass.points > 0 || pass.points_history?.length > 0) && (
+        <Points pass={pass} />
+      )}
 
       {pass.history?.length > 0 && (
         <>

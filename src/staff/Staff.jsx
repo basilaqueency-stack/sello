@@ -18,6 +18,7 @@ function AuthForm() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+  const [showPw, setShowPw] = useState(false)
 
   async function submit(e) {
     e.preventDefault()
@@ -45,14 +46,19 @@ function AuthForm() {
         </label>
         <label>
           {t('auth.password')}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
-            required
-            autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
-          />
+          <span className="pw-wrap">
+            <input
+              type={showPw ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
+              required
+              autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
+            />
+            <button type="button" className="pw-toggle" onClick={() => setShowPw(!showPw)} aria-pressed={showPw}>
+              {showPw ? t('auth.hide') : t('auth.show')}
+            </button>
+          </span>
         </label>
         <Banner kind="error">{error}</Banner>
         <Banner kind="info">{notice}</Banner>

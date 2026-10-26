@@ -117,10 +117,8 @@ export function queueStamp(business, member, client_id = crypto.randomUUID(), at
     at,
   }
   write(K.queue, [...getQueue(), item])
-  const gives = business.points_enabled && business.points_mode === 'visit' ? business.points_per_visit : 0
   const updated = {
     ...member,
-    points: (member.points || 0) + gives,
     membership: { ...ms, credits_remaining: ms.kind === 'credits' ? left - 1 : ms.credits_remaining },
   }
   return { member: updated }

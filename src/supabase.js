@@ -14,7 +14,7 @@ export const supabase = createClient(URL, KEY)
 const KNOWN = [
   'pendiente', 'vencida', 'sin_sellos', 'cancelada', 'sin_permiso', 'slug_en_uso',
   'negocio_no_existe', 'nivel_no_existe', 'nombre_invalido', 'telefono_invalido', 'no_encontrada', 'correo_invalido',
-  'puntos_desactivados', 'monto_invalido', 'premio_no_existe', 'puntos_insuficientes',
+  'puntos_desactivados', 'monto_invalido', 'premio_no_existe', 'puntos_insuficientes', 'tiene_membresia',
 ]
 
 export function friendlyError(error) {

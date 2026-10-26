@@ -160,24 +160,30 @@ export default function Checkin({ business }) {
       setDown(true)
       const q = queueStamp(business, selected, client_id, at)
       if (q.error) return setNotice({ kind: 'error', text: friendlyError({ message: q.error }) })
-      setSelected(q.member)
       setPending(getQueue().length)
-      return setNotice({ kind: 'ok', text: t('of.stampedOffline') })
+      return finish(selected.name, t('of.stampedOffline'))
     }
     if (error) return setNotice({ kind: 'error', text: friendlyError(error) })
     setDown(false)
-    setSelected(data)
-    setNotice({
-      kind: 'ok',
-      text:
-        data.membership.kind === 'unlimited'
-          ? t('ck.stamped')
-          : t('ck.stampedLeft', { n: data.membership.credits_remaining, unit: business.unit_label }),
-    })
+    finish(
+      selected.name,
+      data.membership.kind === 'unlimited'
+        ? t('ck.stamped')
+        : t('ck.stampedLeft', { n: data.membership.credits_remaining, unit: business.unit_label })
+    )
     loadRecent()
   }
 
   // Visit points are added automatically with each stamp; this adds points for a bill, or for a visit with no stamp.
+  // After a stamp, points or a reward, go straight back to the start so the same customer can't be stamped twice by accident.
+  function finish(who, text) {
+    setSelected(null)
+    setResults(null)
+    setQuery('')
+    setAmount('')
+    setNotice({ kind: 'ok', text: `${who} · ${text}` })
+  }
+
   async function addPoints() {
     const spend = business.points_mode === 'spend'
     const value = spend ? Number(amount) : null
@@ -195,16 +201,12 @@ export default function Checkin({ business }) {
       const gain = spend ? Math.floor((value * business.points_per_100) / 100) : business.points_per_visit
       if (gain < 1) return setNotice({ kind: 'error', text: friendlyError({ message: 'monto_invalido' }) })
       queuePoints(business, selected, value, client_id, at)
-      setSelected({ ...selected, points: (selected.points || 0) + gain })
       setPending(getQueue().length)
-      setAmount('')
-      return setNotice({ kind: 'ok', text: t('ck.pointsQueued') })
+      return finish(selected.name, t('ck.pointsQueued'))
     }
     if (error) return setNotice({ kind: 'error', text: friendlyError(error) })
     setDown(false)
-    setSelected(data)
-    setAmount('')
-    setNotice({ kind: 'ok', text: t('ck.pointsAdded', { n: data.points }) })
+    finish(selected.name, t('ck.pointsAdded', { n: data.points }))
   }
 
   async function redeemReward(r) {
@@ -216,8 +218,8 @@ export default function Checkin({ business }) {
     )
     setBusy(false)
     if (error) return setNotice({ kind: 'error', text: isNetworkError(error) ? t('of.needSignal') : friendlyError(error) })
-    setSelected(data)
-    setNotice({ kind: 'ok', text: t('ck.redeemed', { name: r.name }) })
+    finish(selected.name, t('ck.redeemed', { name: r.name }))
+    loadRecent()
   }
 
   const statusBanners = (
@@ -306,13 +308,15 @@ export default function Checkin({ business }) {
           </>
         )}
 
-        {business.points_enabled && (
+        {business.points_enabled && (status !== 'active' || (selected.points || 0) > 0) && (
           <>
             <h2 className="section-label">{t('ck.points')}</h2>
             <div className="card center">
               <div className="points-big">{t('ck.pointsBal', { n: selected.points || 0 })}</div>
             </div>
-            {business.points_mode === 'spend' ? (
+            {status === 'active' ? (
+              <p className="muted small">{t('ck.noPointsMember')}</p>
+            ) : business.points_mode === 'spend' ? (
               <div className="search-row" style={{ marginTop: 10 }}>
                 <input
                   type="number"
@@ -325,11 +329,9 @@ export default function Checkin({ business }) {
                 <button className="btn scan" onClick={addPoints} disabled={busy}>{t('ck.addSpend')}</button>
               </div>
             ) : (
-              status !== 'active' && (
-                <button className="btn ghost" style={{ marginTop: 10 }} onClick={addPoints} disabled={busy}>
-                  {t('ck.addVisit', { n: business.points_per_visit })}
-                </button>
-              )
+              <button className="btn ghost" style={{ marginTop: 10 }} onClick={addPoints} disabled={busy}>
+                {t('ck.addVisit', { n: business.points_per_visit })}
+              </button>
             )}
             {spendPreview(business, amount, t)}
 
