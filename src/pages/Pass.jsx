@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { supabase, friendlyError } from '../supabase.js'
 import { fmtDate, fmtDateTime, money, statusLabel, savePass } from '../lib.js'
 import { useLang } from '../i18n.js'
+import { installStep } from '../installSteps.js'
 import Onboarding, { seenOnboarding } from '../Onboarding.jsx'
 import { Banner, StampGrid } from '../components.jsx'
 
@@ -208,7 +209,7 @@ export default function Pass() {
         onClose={() => setTour(false)}
         steps={[
           { icon: '▤', title: t('oc1.title'), body: t('oc1.body') },
-          { icon: '✓', title: t('oc2.title'), body: t('oc2.body') },
+          ...installStep(t),
         ]}
       />
     </main>

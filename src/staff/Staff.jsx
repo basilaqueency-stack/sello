@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase, friendlyError } from '../supabase.js'
 import { Banner } from '../components.jsx'
 import { useLang, tr as tr0 } from '../i18n.js'
+import { installStep } from '../installSteps.js'
 import Onboarding, { seenOnboarding } from '../Onboarding.jsx'
 import {
   clearAllStaffData, getQueue, hasStoredLogin, isNetworkError, loadStaffCache, saveStaffCache, withTimeout,
@@ -330,8 +331,8 @@ export default function Staff() {
         open={tour}
         onClose={() => setTour(false)}
         steps={[
-          { icon: '▤', title: t('os1.title'), body: t('os1.body') },
-          { icon: '✓', title: t('os2.title'), body: t('os2.body') + (isOwner ? ` ${t('os2.owner')}` : '') },
+          { icon: '▤', title: t('os1.title'), body: t('os1.body') + (isOwner ? ` ${t('os2.owner')}` : '') },
+          ...installStep(t),
         ]}
       />
       <nav className="app-footer">

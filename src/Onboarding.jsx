@@ -42,6 +42,8 @@ export default function Onboarding({ id, steps, open, onClose }) {
         <div className="modal-icon" aria-hidden="true">{step.icon}</div>
         <h2 className="title">{step.title}</h2>
         <p>{step.body}</p>
+        {step.list && <ol className="install-steps">{step.list.map((x, n) => <li key={n}>{x}</li>)}</ol>}
+        {step.action && <button className="btn" onClick={step.action.onClick}>{step.action.label}</button>}
         <div className="dots" aria-hidden="true">
           {steps.map((_, n) => <i key={n} className={n === i ? 'on' : ''} />)}
         </div>
