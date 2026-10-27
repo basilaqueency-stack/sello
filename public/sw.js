@@ -2,7 +2,7 @@
 // - Pages: try the network first, fall back to the last saved copy.
 // - Other files from this site: serve the saved copy if we have one.
 // Data from the database is never cached here; the pass page keeps its own copy.
-const CACHE = 'sello-v4'
+const CACHE = 'sello-v5'
 
 self.addEventListener('install', () => self.skipWaiting())
 

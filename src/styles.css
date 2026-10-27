@@ -1,13 +1,13 @@
 :root {
-  --bg: #9db3d3; /* page background: powder blue */
-  --card: #ffffff66; /* boxes: frosted lighter blue */
-  --card-deep: #d3deee; /* solid light blue: pass card, footer (opaque) */
+  --bg: #ffffff; /* page background: white */
+  --card: #9db3d359; /* boxes: powder blue tint */
+  --card-deep: #e3eaf4; /* solid light blue: pass card, footer (opaque) */
   --text: #3f1521; /* main copy: vintage wine */
   --small: #5a2a39; /* small print */
   --box-border: #3f1521; /* outline of the boxes: wine */
   --line: rgba(63, 21, 33, 0.22);
   --line-strong: rgba(63, 21, 33, 0.5);
-  --pill-bg: rgba(255, 255, 255, 0.6);
+  --pill-bg: rgba(157, 179, 211, 0.25);
   --focus: #3f1521;
   --warn-text: #9a2f12;
   --bold: #3f1521; /* big headings, name on the pass: wine */
@@ -209,7 +209,7 @@ a.tier-card { text-decoration: none; }
 html, body { background-color: var(--bg); }
 body {
   background-image:
-    radial-gradient(120% 50% at 50% -10%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 60%);
+    radial-gradient(120% 50% at 50% -10%, rgba(157, 179, 211, 0.22), rgba(157, 179, 211, 0) 60%);
   background-attachment: fixed;
 }
 body::before { /* paper grain over everything, barely there */
