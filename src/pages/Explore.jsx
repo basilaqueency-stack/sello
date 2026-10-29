@@ -30,7 +30,6 @@ export default function Explore() {
 
   return (
     <main className="page">
-      <Link to="/" className="back-link">{t('pass.back')}</Link>
       <h1 className="title">{t('ex.title')}</h1>
       <p className="muted">{t('ex.sub')}</p>
 

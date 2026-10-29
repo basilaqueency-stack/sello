@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Join from './pages/Join.jsx'
 import Pass from './pages/Pass.jsx'
@@ -12,8 +12,14 @@ const Staff = lazy(() => import('./staff/Staff.jsx'))
 
 function LangSwitch() {
   const { lang, setLang, t } = useLang()
+  const nav = useNavigate()
+  const { pathname } = useLocation()
+  const atHome = pathname === '/'
+  // Installed apps have no browser back button, so we give one. If there is nothing to go back to, go home.
+  const goBack = () => (window.history.state?.idx > 0 ? nav(-1) : nav('/'))
   return (
     <div className="lang-bar" role="group" aria-label={t('lang.label')}>
+      {!atHome && <button className="back-btn" onClick={goBack} aria-label={t('back')}>‹ {t('back')}</button>}
       <button className={lang === 'es' ? 'on' : ''} onClick={() => setLang('es')}>ES</button>
       <button className={lang === 'en' ? 'on' : ''} onClick={() => setLang('en')}>EN</button>
     </div>

@@ -158,6 +158,7 @@ const DICT = {
     'cb.busy': 'Creando…',
     'cb.submit': 'Crear negocio',
 
+    'back': 'Atrás',
     'nav.home': 'Inicio',
     'nav.panel': 'Panel',
 
@@ -478,6 +479,7 @@ const DICT = {
     'cb.busy': 'Creating…',
     'cb.submit': 'Create business',
 
+    'back': 'Back',
     'nav.home': 'Home',
     'nav.panel': 'Dashboard',
 

@@ -147,7 +147,6 @@ export default function Pass() {
 
   return (
     <main className="page">
-      <Link to="/" className="back-link">{t('pass.back')}</Link>
       {offline && <Banner kind="warn">{t('pass.offline')}</Banner>}
 
       <div className="wallet-card">

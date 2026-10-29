@@ -67,6 +67,7 @@ a { color: inherit; text-decoration: none; }
 /* ----- language switch ----- */
 .lang-bar { max-width: 520px; margin: 0 auto; padding: 8px 16px 0; padding-top: max(8px, env(safe-area-inset-top)); display: flex; justify-content: flex-end; gap: 4px; }
 .lang-bar button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 3px 9px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--small); }
+.lang-bar .back-btn { margin-right: auto; font-family: 'Inter Variable', system-ui, sans-serif; font-size: 14px; font-weight: 600; padding: 6px 12px; color: var(--text); }
 .lang-bar button.on { background: var(--card); color: var(--text); border-color: var(--line-strong); font-weight: 700; }
 
 /* ----- buttons ----- */
