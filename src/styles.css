@@ -13,7 +13,7 @@
   --bold: #3f1521; /* big headings, name on the pass: wine */
   --accent: #3f1521; /* main buttons, filled stamps: wine */
   --on-accent: #9db3d3; /* text on wine: powder blue */
-  --profile: #3f1521; /* avatar circles */
+  --profile: #9db3d3; /* avatar circles: powder blue with wine initials */
   --ink: #3f1521; /* text inside inputs */
 
   /* depth: soft plum-tinted shadows, a light-catching top edge, and a fine paper grain */
@@ -156,9 +156,10 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
   position: fixed; left: 0; right: 0; bottom: 0; max-width: 520px; margin: 0 auto; height: calc(62px + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; background: var(--card-deep); border-top: 1px solid var(--line); display: flex; z-index: 10;
 }
-.foot-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: none; border: none; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--small); }
-.foot-icon { font-size: 18px; line-height: 1; }
-.foot-tab.active { color: var(--text); box-shadow: inset 0 3px 0 var(--accent); }
+.foot-tab { -webkit-tap-highlight-color: transparent; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: none; border: none; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--small); }
+.foot-icon { line-height: 0; }
+.foot-icon svg { width: 26px; height: 26px; display: block; }
+.foot-tab.active { color: var(--accent); }
 
 .person-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border-radius: 12px; padding: 10px 12px; cursor: pointer; }
 .person-row.static { cursor: default; }
@@ -300,3 +301,9 @@ body::before { /* paper grain over everything, barely there */
 .install-steps { text-align: left; margin: 8px 0 14px; padding-left: 22px; }
 .install-steps li { margin: 4px 0; }
 @media (max-width: 360px) { .page { padding-left: 14px; padding-right: 14px; } }
+
+/* iPhone-style tab bar: frosted white, hairline on top, outline icons that fill when selected */
+.app-footer { background: rgba(255, 255, 255, 0.86); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px); border-top: 0.5px solid var(--line-strong); box-shadow: none; height: calc(54px + env(safe-area-inset-bottom)); }
+.foot-tab { font-size: 10px; font-weight: 500; gap: 3px; color: #7d6a72; padding-top: 2px; }
+.foot-tab.active { font-weight: 600; }
+.shell-body { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }

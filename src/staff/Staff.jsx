@@ -4,6 +4,17 @@ import { supabase, friendlyError } from '../supabase.js'
 import { Banner } from '../components.jsx'
 import { useLang, tr as tr0 } from '../i18n.js'
 import { installStep } from '../installSteps.js'
+const HomeIcon = ({ on }) => (
+  <svg viewBox="0 0 24 24" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+    <path d="M3.5 10.8 12 3.6l8.5 7.2V20a1 1 0 0 1-1 1H15v-6h-6v6H4.5a1 1 0 0 1-1-1z" />
+  </svg>
+)
+const PanelIcon = ({ on }) => (
+  <svg viewBox="0 0 24 24" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3.5" y="3.5" width="7" height="7" rx="1.8" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.8" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="1.8" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.8" />
+  </svg>
+)
 import Onboarding, { seenOnboarding } from '../Onboarding.jsx'
 import {
   clearAllStaffData, getQueue, hasStoredLogin, isNetworkError, loadStaffCache, saveStaffCache, withTimeout,
@@ -337,12 +348,12 @@ export default function Staff() {
       />
       <nav className="app-footer">
         <button className={`foot-tab ${tab === 'inicio' ? 'active' : ''}`} onClick={() => setTab('inicio')}>
-          <span className="foot-icon">⌂</span>
+          <span className="foot-icon"><HomeIcon on={tab === 'inicio'} /></span>
           <span>{t('nav.home')}</span>
         </button>
         {isOwner && (
           <button className={`foot-tab ${tab === 'panel' ? 'active' : ''}`} onClick={() => setTab('panel')}>
-            <span className="foot-icon">▦{waiting > 0 && <i className="badge">{waiting}</i>}</span>
+            <span className="foot-icon"><PanelIcon on={tab === 'panel'} />{waiting > 0 && <i className="badge">{waiting}</i>}</span>
             <span>{t('nav.panel')}</span>
           </button>
         )}
